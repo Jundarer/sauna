@@ -1,7 +1,16 @@
 from tkinter import *
 from datetime import datetime, timedelta
-#from RPi import GPIO # geht NUR im Raspi!
 import os
+import argparse
+#from RPi import GPIO # geht NUR im Raspi!
+
+# Initialisiert den Argument Parser, welches Parameter aus der Kommandozeile ausliest
+parser = argparse.ArgumentParser()
+# Parameter "vollbild" wird als true gespeichert, wenn "--vollbild" bei der Ausfuehrung hinzugefuegt wird. Sonst ist es false
+parser.add_argument('--vollbild', action='store_true',
+                    help='Startet das Programm im Vollbildschirm-Modus')
+# Speichert die Parameter in die "args" Variable
+args = parser.parse_args()
 
 # Helfer Funktion(en)
 def canvasBildErsetzen(canvas, neues_bild):
@@ -20,7 +29,8 @@ class kontroll_fenster:
         self.sollTemp = 0
         # Status Variablen
         self.timerAktiv = False         # Hilfsmarke geplant zum stoppen
-        self.vollbild = False
+        # Liest die Programm args aus, um den initialen Vollbild-Modus zu setzen
+        self.vollbild = args.vollbild
         # Wird gesetzt, falls die
         self.deviceFile = ""
         # GPIO Variablen
@@ -36,11 +46,16 @@ class kontroll_fenster:
         self.stufenMerker = 0
 
         # inits
-        self.initDeviceFile()
-        self.initSoll()
+        self.init()
 
         self.fenster.bind("<F11>", self.vollbildToggle)
         self.fenster.bind("<Escape>", self.vollbildBeenden)
+
+    def init(self):
+        if self.vollbild:
+            self.vollbildStarten()
+        self.initDeviceFile()
+        self.initSoll()
 
     def initSoll(self):
         """alten Sollwert(Temperatur) aus Datei holen"""
@@ -68,7 +83,7 @@ class kontroll_fenster:
         canvasBildErsetzen(sauna_canvas, sauna_img)
 
     def starten(self):
-        """Starte Taste wurde gedrückt"""
+        """Starten-Taste gedrückt"""
         self.timerAktiv = True
         aktuelleTemp_label.config(fg="indian red")
         canvasBildErsetzen(sauna_canvas, sauna_aktiv_img)
@@ -105,7 +120,7 @@ class kontroll_fenster:
                         first, second = f.readlines()
                 tempString = second.split("=")[1]
                 tempLabel['text'] = str(int(tempString)/1000)
-            tempLabel.after(3000, update)
+            tempLabel.after(2000, update)
         update()
 
     def anpassungZeit(self, hours, minutes):
@@ -123,13 +138,19 @@ class kontroll_fenster:
         # Umstellen des Boolean
         self.vollbild = not self.vollbild
         self.fenster.attributes("-fullscreen", self.vollbild)
-        return "break"
+        return
 
     def vollbildBeenden(self, event=None):
         """Deaktiviert Vollbild"""
         self.vollbild = False
         self.fenster.attributes("-fullscreen", False)
-        return "break"
+        return
+
+    def vollbildStarten(self, event=None):
+        """Aktiviert Vollbild"""
+        self.vollbild = True
+        self.fenster.attributes("-fullscreen", True)
+        return
 
 
 #Fenster-Überschrift
@@ -145,7 +166,7 @@ beschreibungsText_size = 15
 
 # Sollwert-Schieberegler einrichten
 schieberegeler_scale = Scale(
-    control.fenster,font=("Arial", 15), from_=95, to=60, tickinterval=5, length=390, width=100, sliderlength=60, command=control.saveSoll)
+    control.fenster, font=("Arial", 15), from_=95, to=60, tickinterval=5, length=390, width=100, sliderlength=60, command=control.saveSoll)
 schieberegeler_scale.set(control.sollTemp)
 # soll_button = Button(control.fenster, font=("arial", 16),
 #                      text='Soll-Temp', command=lambda: saveSoll(soll_button))
@@ -154,7 +175,7 @@ schieberegeler_scale.set(control.sollTemp)
 
 # Schalt-Zeit-Fenster einrichten und Soll-Zeit anzeigen
 sollZeitText_label = Label(control.fenster, font=("Arial", beschreibungsText_size),
-                      text="Startzeit:")
+                           text="Startzeit:")
 sollZeit_label = Label(control.fenster, font=("Arial", 35),
                        text=control.sollZeit.strftime("%H:%M"))
 
@@ -164,36 +185,36 @@ stdText_label = Label(control.fenster, font=("Arial", 12),
 minText_label = Label(control.fenster, font=("Arial", 12),
                       text="Minuten:")
 stdUp_button = Button(control.fenster, font=("Arial", 28),
-                    text="\u25b2", command=lambda: control.anpassungZeit(1, 0))
+                      text="\u25b2", command=lambda: control.anpassungZeit(1, 0))
 stdDown_button = Button(control.fenster, font=("Arial", 28),
-                      text="\u25bc", command=lambda: control.anpassungZeit(-1, 0))
-minUp_button = Button(control.fenster, font=("Arial", 13),height=1,width=6,
-                    text="\u25b2", command=lambda: control.anpassungZeit(0, 1))
-minDown_button = Button(control.fenster, font=("Arial", 13),height=1,width=6,
-                      text="\u25bc", command=lambda: control.anpassungZeit(0, -1))
-minUp5_button = Button(control.fenster, font=("Arial", 13),height=1,width=6,
-                    text="\u25b2x5", command=lambda: control.anpassungZeit(0, 5))
-minDown5_button = Button(control.fenster, font=("Arial", 13),height=1,width=6,
-                      text="\u25bcx5", command=lambda: control.anpassungZeit(0, -5))
+                        text="\u25bc", command=lambda: control.anpassungZeit(-1, 0))
+minUp_button = Button(control.fenster, font=("Arial", 13), height=1, width=6,
+                      text="\u25b2", command=lambda: control.anpassungZeit(0, 1))
+minDown_button = Button(control.fenster, font=("Arial", 13), height=1, width=6,
+                        text="\u25bc", command=lambda: control.anpassungZeit(0, -1))
+minUp5_button = Button(control.fenster, font=("Arial", 13), height=1, width=6,
+                       text="\u25b2x5", command=lambda: control.anpassungZeit(0, 5))
+minDown5_button = Button(control.fenster, font=("Arial", 13), height=1, width=6,
+                         text="\u25bcx5", command=lambda: control.anpassungZeit(0, -5))
 
 # Ist-Temperatur-Fenster erzeugen
 aktuelleTempText_label = Label(control.fenster,
-                     font=("Arial", beschreibungsText_size), text="Temperatur:")
+                               font=("Arial", beschreibungsText_size), text="Temperatur:")
 #plazierung in anderer Zeile definieren, damit die Funktion nicht Grid aufruft
 aktuelleTemp_label = Label(control.fenster, fg="blue4",
-                      font=("Arial", 60), text=control.aktuelleTemp)
+                           font=("Arial", 60), text=control.aktuelleTemp)
 #plazierung in anderer Zeile definieren, damit die Funktion nicht Grid aufruft
 
-start_button = Button(control.fenster, font=("Arial", 20),activebackground="green4", bg="green3",
+start_button = Button(control.fenster, font=("Arial", 20), activebackground="green4", bg="green3",
                       relief=RAISED, text="Start", command=control.starten)
-stop_button = Button(control.fenster, font=("Arial", 20),activebackground="firebrick4", bg="firebrick3",
+stop_button = Button(control.fenster, font=("Arial", 20), activebackground="firebrick4", bg="firebrick3",
                      relief=RAISED, text="Stop", command=control.ausschalten)
 
 # Uhr-Fenster einrichten und Lokalzeit anzeigen
 aktuelleZeitText_label = Label(control.fenster, font=("Arial", beschreibungsText_size),
-                     text="Uhrzeit:")
+                               text="Uhrzeit:")
 aktuelleZeit_label = Label(control.fenster, font=("Arial", 35),
-                      text=control.aktuelleZeit.strftime("%H:%M:%S"))
+                           text=control.aktuelleZeit.strftime("%H:%M:%S"))
 
 # Saunabilder laden
 sauna_img = PhotoImage(file='sauna.png')
