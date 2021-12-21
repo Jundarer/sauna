@@ -1,19 +1,14 @@
 from tkinter import *
 from datetime import datetime, timedelta
-import time
 #from RPi import GPIO # geht NUR im Raspi!
 import os
 
 # Helfer Funktion(en)
-
-
 def canvasBildErsetzen(canvas, neues_bild):
     canvas.delete('all')
     canvas.create_image(5, 5, anchor=NW, image=neues_bild)
 
 # Klasse, welche alles im Zusammenhang mit dem Fenster verwaltet
-
-
 class kontroll_fenster:
     def __init__(self):
         # Hauptfenster
@@ -21,7 +16,7 @@ class kontroll_fenster:
         # Zeit+Temperatur Variablen
         self.aktuelleZeit = datetime.now()
         self.sollZeit = datetime.now()
-        self.aktuelleTemp = 0
+        self.aktuelleTemp = 70
         self.sollTemp = 0
         # Status Variablen
         self.timerAktiv = False         # Hilfsmarke geplant zum stoppen
@@ -69,13 +64,13 @@ class kontroll_fenster:
     def ausschalten(self):
         """"Stop-Taste gedrückt"""
         self.timerAktiv = False
-        aktuelleTemp_label.config(bg="blue", fg="red")
+        aktuelleTemp_label.config(fg="blue4")
         canvasBildErsetzen(sauna_canvas, sauna_img)
 
     def starten(self):
         """Starte Taste wurde gedrückt"""
         self.timerAktiv = True
-        aktuelleTemp_label.config(bg="green", fg="red")
+        aktuelleTemp_label.config(fg="indian red")
         canvasBildErsetzen(sauna_canvas, sauna_aktiv_img)
 
     # nun gehts in die Hitze
@@ -150,7 +145,7 @@ beschreibungsText_size = 15
 
 # Sollwert-Schieberegler einrichten
 schieberegeler_scale = Scale(
-    control.fenster, from_=95, to=60, tickinterval=5, length=390, width=100, sliderlength=60, command=control.saveSoll)
+    control.fenster,font=("Arial", 15), from_=95, to=60, tickinterval=5, length=390, width=100, sliderlength=60, command=control.saveSoll)
 schieberegeler_scale.set(control.sollTemp)
 # soll_button = Button(control.fenster, font=("arial", 16),
 #                      text='Soll-Temp', command=lambda: saveSoll(soll_button))
@@ -160,25 +155,33 @@ schieberegeler_scale.set(control.sollTemp)
 # Schalt-Zeit-Fenster einrichten und Soll-Zeit anzeigen
 sollZeitText_label = Label(control.fenster, font=("Arial", beschreibungsText_size),
                       text="Startzeit:")
-sollZeit_label = Label(control.fenster, font=("Arial", 25),
+sollZeit_label = Label(control.fenster, font=("Arial", 35),
                        text=control.sollZeit.strftime("%H:%M"))
 
 # Zeitkontroll buttons
-stdUp_button = Button(control.fenster, font=("Arial", 20),
+stdText_label = Label(control.fenster, font=("Arial", 12),
+                      text="Stunden:")
+minText_label = Label(control.fenster, font=("Arial", 12),
+                      text="Minuten:")
+stdUp_button = Button(control.fenster, font=("Arial", 28),
                     text="\u25b2", command=lambda: control.anpassungZeit(1, 0))
-stdDown_button = Button(control.fenster, font=("Arial", 20),
+stdDown_button = Button(control.fenster, font=("Arial", 28),
                       text="\u25bc", command=lambda: control.anpassungZeit(-1, 0))
-minUp_button = Button(control.fenster, font=("Arial", 20),
+minUp_button = Button(control.fenster, font=("Arial", 13),height=1,width=6,
                     text="\u25b2", command=lambda: control.anpassungZeit(0, 1))
-minDown_button = Button(control.fenster, font=("Arial", 20),
+minDown_button = Button(control.fenster, font=("Arial", 13),height=1,width=6,
                       text="\u25bc", command=lambda: control.anpassungZeit(0, -1))
+minUp5_button = Button(control.fenster, font=("Arial", 13),height=1,width=6,
+                    text="\u25b2x5", command=lambda: control.anpassungZeit(0, 5))
+minDown5_button = Button(control.fenster, font=("Arial", 13),height=1,width=6,
+                      text="\u25bcx5", command=lambda: control.anpassungZeit(0, -5))
 
 # Ist-Temperatur-Fenster erzeugen
 aktuelleTempText_label = Label(control.fenster,
                      font=("Arial", beschreibungsText_size), text="Temperatur:")
 #plazierung in anderer Zeile definieren, damit die Funktion nicht Grid aufruft
-aktuelleTemp_label = Label(control.fenster, bg="blue", fg="red",
-                      font=("Arial", 40), text=control.aktuelleTemp)
+aktuelleTemp_label = Label(control.fenster, fg="blue4",
+                      font=("Arial", 60), text=control.aktuelleTemp)
 #plazierung in anderer Zeile definieren, damit die Funktion nicht Grid aufruft
 
 start_button = Button(control.fenster, font=("Arial", 20),activebackground="green4", bg="green3",
@@ -189,7 +192,7 @@ stop_button = Button(control.fenster, font=("Arial", 20),activebackground="fireb
 # Uhr-Fenster einrichten und Lokalzeit anzeigen
 aktuelleZeitText_label = Label(control.fenster, font=("Arial", beschreibungsText_size),
                      text="Uhrzeit:")
-aktuelleZeit_label = Label(control.fenster, font=("Arial", 25),
+aktuelleZeit_label = Label(control.fenster, font=("Arial", 35),
                       text=control.aktuelleZeit.strftime("%H:%M:%S"))
 
 # Saunabilder laden
@@ -202,21 +205,25 @@ sauna_canvas.create_image(5, 5, anchor=NW, image=sauna_img)
 # Positionierung aller Elemente
 schieberegeler_scale.place(x=0, y=0)
 aktuelleTempText_label.place(x=170, y=3)
-aktuelleTemp_label.place(x=170, y=50, width=125, height=125)
+aktuelleTemp_label.place(x=170, y=30, width=125, height=125)
 
 start_button.place(x=170, y=200, width=125, height=70)
-stop_button.place(x=170, y=285, width=125, height=70)
+stop_button.place(x=170, y=290, width=125, height=70)
 
 sollZeitText_label.place(x=375, y=3)
-sollZeit_label.place(x=375, y=50)
+sollZeit_label.place(x=365, y=60)
 
-stdUp_button.place(x=360, y=190)
-stdDown_button.place(x=360, y=260)
-minUp_button.place(x=430, y=190)
-minDown_button.place(x=430, y=260)
+stdText_label.place(x=350, y=180)
+minText_label.place(x=430, y=180)
+stdUp_button.place(x=350, y=200)
+minUp_button.place(x=430, y=240)
+minUp5_button.place(x=430, y=200)
+stdDown_button.place(x=350, y=285)
+minDown_button.place(x=430, y=285)
+minDown5_button.place(x=430, y=325)
 
 aktuelleZeitText_label.place(x=630, y=3)
-aktuelleZeit_label.place(x=600, y=50)
+aktuelleZeit_label.place(x=580, y=60)
 
 sauna_canvas.place(x=550, y=160)
 # GPIO konfig
