@@ -48,9 +48,7 @@ class kontroll_fenster:
         self.fenster.bind("<Escape>", self.vollbildBeenden)
 
     def initSoll(self):
-        # alten Sollwert(Temperatur) aus Datei holen
-        # Pfad muß auf die Maschine angepasst werden!!
-        # with open("/home/pi/temp.txt") as f:
+        """alten Sollwert(Temperatur) aus Datei holen"""
         with open("solltemp.ini", "r+") as f:
             neueTemp = f.read()
             if neueTemp != "":
@@ -62,22 +60,22 @@ class kontroll_fenster:
                 if d.startswith("10") or d.startswith("28"):
                     self.deviceFile = "/sys/bus/w1/devices/" + d + "/w1_slave"
 
-    # gültige Soll-Temperatur für später sichern.
     def saveSoll(self, temp):
+        """gültige Soll-Temperatur für später sichern."""
         self.sollTemp = temp
         with open("solltemp.ini", "w+") as f:
             f.write(temp)
 
-    # Stop-Taste gedrückt.
     def ausschalten(self):
+        """"Stop-Taste gedrückt"""
         self.timerAktiv = False
-        curTemp_label.config(bg="blue", fg="red")
+        aktuelleTemp_label.config(bg="blue", fg="red")
         canvasBildErsetzen(sauna_canvas, sauna_img)
 
-    # Start-Taste gedrückt!
     def starten(self):
+        """Starte Taste wurde gedrückt"""
         self.timerAktiv = True
-        curTemp_label.config(bg="green", fg="red")
+        aktuelleTemp_label.config(bg="green", fg="red")
         canvasBildErsetzen(sauna_canvas, sauna_aktiv_img)
 
     # nun gehts in die Hitze
@@ -86,6 +84,7 @@ class kontroll_fenster:
         # hier nun das "Regel-Werk"!
 
     def zeitUpdate(self, timeLabel):
+        """Definiert und initalisiert die Zeit updates"""
         # Funktion, die immer wieder aufgerufen wird, um die Zeitanzeige zu updaten
         def update():
             # Zeit updates
@@ -101,7 +100,7 @@ class kontroll_fenster:
         update()
 
     def tempUpdate(self, tempLabel):
-        # Gleiches Prinzip wie in timeUpdate
+        """Gleiches Prinzip wie in zeitUpdate"""
         def update():
             # Temp updates
             if os.path.isfile(self.deviceFile):
@@ -114,22 +113,25 @@ class kontroll_fenster:
             tempLabel.after(3000, update)
         update()
 
-    # Passt die Uhrzeit des sollTime labels relativ mit den gegeben Stunden und Minuten an
     def anpassungZeit(self, hours, minutes):
+        """Passt die Uhrzeit des sollTime labels relativ mit den gegeben Stunden und Minuten an"""
         self.sollZeit = self.sollZeit+timedelta(hours=hours, minutes=minutes)
-        sollTime_label.config(text=self.sollZeit.strftime("%H:%M"))
+        sollZeit_label.config(text=self.sollZeit.strftime("%H:%M"))
 
-    # Initialisiert Zeit und Temp update loops mit den gegeben labels
     def initialisiereZeitTemp(self, timeLabel, tempLabel):
+        """Initialisiert Zeit und Temp update loops mit den gegeben labels"""
         self.zeitUpdate(timeLabel)
         self.tempUpdate(tempLabel)
 
     def vollbildToggle(self, event=None):
-        self.vollbild = not self.vollbild  # Just toggling the boolean
+        """Aktiviert Vollbild falls nicht aktiv und deaktiviert ihn sonst. Der event Parameter wird von tkinter benoetigt."""
+        # Umstellen des Boolean
+        self.vollbild = not self.vollbild
         self.fenster.attributes("-fullscreen", self.vollbild)
         return "break"
 
     def vollbildBeenden(self, event=None):
+        """Deaktiviert Vollbild"""
         self.vollbild = False
         self.fenster.attributes("-fullscreen", False)
         return "break"
@@ -156,62 +158,65 @@ schieberegeler_scale.set(control.sollTemp)
 # bei Klick: neue Temperatur übernehmen
 
 # Schalt-Zeit-Fenster einrichten und Soll-Zeit anzeigen
-sollTime_text = Label(control.fenster, font=("Arial", beschreibungsText_size),
+sollZeitText_label = Label(control.fenster, font=("Arial", beschreibungsText_size),
                       text="Startzeit:")
-sollTime_label = Label(control.fenster, font=("Arial", 25),
+sollZeit_label = Label(control.fenster, font=("Arial", 25),
                        text=control.sollZeit.strftime("%H:%M"))
 
-#
-std_up_but = Button(control.fenster, font=("Arial", 20),
+# Zeitkontroll buttons
+stdUp_button = Button(control.fenster, font=("Arial", 20),
                     text="\u25b2", command=lambda: control.anpassungZeit(1, 0))
-std_down_but = Button(control.fenster, font=("Arial", 20),
+stdDown_button = Button(control.fenster, font=("Arial", 20),
                       text="\u25bc", command=lambda: control.anpassungZeit(-1, 0))
-min_up_but = Button(control.fenster, font=("Arial", 20),
+minUp_button = Button(control.fenster, font=("Arial", 20),
                     text="\u25b2", command=lambda: control.anpassungZeit(0, 1))
-min_down_but = Button(control.fenster, font=("Arial", 20),
+minDown_button = Button(control.fenster, font=("Arial", 20),
                       text="\u25bc", command=lambda: control.anpassungZeit(0, -1))
 
 # Ist-Temperatur-Fenster erzeugen
-curTemp_text = Label(control.fenster,
+aktuelleTempText_label = Label(control.fenster,
                      font=("Arial", beschreibungsText_size), text="Temperatur:")
 #plazierung in anderer Zeile definieren, damit die Funktion nicht Grid aufruft
-curTemp_label = Label(control.fenster, bg="blue", fg="red",
+aktuelleTemp_label = Label(control.fenster, bg="blue", fg="red",
                       font=("Arial", 40), text=control.aktuelleTemp)
 #plazierung in anderer Zeile definieren, damit die Funktion nicht Grid aufruft
 
-start_button = Button(control.fenster, font=("Arial", 20), bg="green",
-                      relief="sunken", text="Start", command=control.starten)
-stop_button = Button(control.fenster, font=("Arial", 20), bg="red",
-                     relief="sunken", text="Stop", command=control.ausschalten)
+start_button = Button(control.fenster, font=("Arial", 20),activebackground="green4", bg="green3",
+                      relief=RAISED, text="Start", command=control.starten)
+stop_button = Button(control.fenster, font=("Arial", 20),activebackground="firebrick4", bg="firebrick3",
+                     relief=RAISED, text="Stop", command=control.ausschalten)
 
 # Uhr-Fenster einrichten und Lokalzeit anzeigen
-curTime_text = Label(control.fenster, font=("Arial", beschreibungsText_size),
+aktuelleZeitText_label = Label(control.fenster, font=("Arial", beschreibungsText_size),
                      text="Uhrzeit:")
-curTime_label = Label(control.fenster, font=("Arial", 25),
+aktuelleZeit_label = Label(control.fenster, font=("Arial", 25),
                       text=control.aktuelleZeit.strftime("%H:%M:%S"))
 
+# Saunabilder laden
 sauna_img = PhotoImage(file='sauna.png')
 sauna_aktiv_img = PhotoImage(file='sauna_aktiv.png')
+# Canvas erstellen und das Bild in dem Canvas erstellen
 sauna_canvas = Canvas(control.fenster, width=225, height=205)
-sauna_canvas.create_image(5, 5, anchor="nw", image=sauna_img)
+sauna_canvas.create_image(5, 5, anchor=NW, image=sauna_img)
 
+# Positionierung aller Elemente
 schieberegeler_scale.place(x=0, y=0)
-curTemp_text.place(x=170, y=3)
-curTemp_label.place(x=170, y=50, width=125, height=125)
+aktuelleTempText_label.place(x=170, y=3)
+aktuelleTemp_label.place(x=170, y=50, width=125, height=125)
 
 start_button.place(x=170, y=200, width=125, height=70)
 stop_button.place(x=170, y=285, width=125, height=70)
 
-sollTime_text.place(x=375, y=3)
-sollTime_label.place(x=375, y=50)
+sollZeitText_label.place(x=375, y=3)
+sollZeit_label.place(x=375, y=50)
 
-std_up_but.place(x=360, y=190)
-std_down_but.place(x=360, y=260)
-min_up_but.place(x=430, y=190)
-min_down_but.place(x=430, y=260)
+stdUp_button.place(x=360, y=190)
+stdDown_button.place(x=360, y=260)
+minUp_button.place(x=430, y=190)
+minDown_button.place(x=430, y=260)
 
-curTime_text.place(x=630, y=3)
-curTime_label.place(x=600, y=50)
+aktuelleZeitText_label.place(x=630, y=3)
+aktuelleZeit_label.place(x=600, y=50)
 
 sauna_canvas.place(x=550, y=160)
 # GPIO konfig
@@ -229,6 +234,6 @@ sauna_canvas.place(x=550, y=160)
 #os.system("modprobe w1-therm")
 
 # Startet den Loop, um die Zeit und Temperatur zu updaten mit den gegeben Labels
-control.initialisiereZeitTemp(curTime_label, curTemp_label)
+control.initialisiereZeitTemp(aktuelleZeit_label, aktuelleTemp_label)
 # Startet den mainloop des Fensters, damit jegliche Updates(Tasten usw.) ausgefuehert werden
 control.fenster.mainloop()
