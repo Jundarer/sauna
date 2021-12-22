@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import os
 import sys
 import argparse
+import sauna_kommunikation
 #from RPi import GPIO # geht NUR im Raspi!
 
 # Initialisiert den Argument Parser, welches Parameter aus der Kommandozeile ausliest
@@ -15,6 +16,7 @@ args = parser.parse_args()
 
 # Konstanten
 OWN_PATH = sys.path[0]
+TEMP_UPDATE_INTERVAL=2000
 
 # Helfer Funktion(en)
 def canvasBildErsetzen(canvas, neues_bild):
@@ -37,18 +39,8 @@ class kontroll_fenster:
         self.vollbild = args.vollbild
         # Wird gesetzt, falls die
         self.deviceFile = ""
-        # GPIO Variablen
-        self.Rel_out = (31, 33, 35, 37)  # GPIO-Pins (N, R, S, T)
-        #Def. Leistungs-Stufen
-        self.kw0 = (0, 0, 0, 0)
-        self.kw1 = (0, 0, 1, 1)
-        self.kw2 = (1, 0, 0, 1)
-        self.kw3 = (1, 0, 1, 1)
-        self.kw4 = (1, 1, 1, 1)
-        self.leistungsStufe = (
-            self.kw0, self.kw1, self.kw2, self.kw3, self.kw4)
-        self.stufenMerker = 0
 
+        self.sauna=sauna_kommunikation.sauna()
         # inits
         self.init()
 
@@ -60,6 +52,8 @@ class kontroll_fenster:
         self.fenster.title(windowTitle)
         self.fenster.geometry("800x400")
         self.fenster.iconbitmap(os.path.join(OWN_PATH,"img","sauna_icon.ico"))
+        # Alle Information unter Minuten von der Schaltzeit entfernen
+        self.schaltZeit=self.schaltZeit-timedelta(seconds=self.schaltZeit.second,microseconds=self.schaltZeit.microsecond)
         # Falls mit dem Vollbild arg gestartet wurde, Vollbild akitivieren
         if self.vollbild:
             self.vollbildStarten()
@@ -90,17 +84,22 @@ class kontroll_fenster:
         self.timerAktiv = False
         aktuelleTemp_label.config(fg="blue4")
         canvasBildErsetzen(sauna_canvas, sauna_img)
+        self.sauna.stoppen()
 
     def starten(self):
         """Starten-Taste gedrückt"""
         self.timerAktiv = True
         aktuelleTemp_label.config(fg="indian red")
-        canvasBildErsetzen(sauna_canvas, sauna_aktiv_img)
+        canvasBildErsetzen(sauna_canvas, sauna_warten_img)
+        # Sauna bei neuem klicken von Start stoppen (?)
+        self.sauna.stoppen()
 
     # nun gehts in die Hitze
     def regeln(self):
         print("nun soll geregelt werden")
+        canvasBildErsetzen(sauna_canvas, sauna_aktiv_img)
         # hier nun das "Regel-Werk"!
+        self.sauna.starten(self.aktuelleTemp, self.sollTemp)
 
     def zeitUpdate(self, timeLabel):
         """Definiert und initalisiert die Zeit updates"""
@@ -128,8 +127,8 @@ class kontroll_fenster:
                     with open(self.deviceFile) as f:
                         first, second = f.readlines()
                 tempString = second.split("=")[1]
-                tempLabel['text'] = str(int(tempString)/1000)
-            tempLabel.after(2000, update)
+                tempLabel['text'] = str(int(tempString)/1000)+"\b00B0"
+            tempLabel.after(TEMP_UPDATE_INTERVAL, update)
         update()
 
     def anpassungZeit(self, hours, minutes):
@@ -201,7 +200,7 @@ minDown5_button = Button(control.fenster, font=("Arial", 13), height=1, width=6,
 aktuelleTempText_label = Label(control.fenster,
                                font=("Arial", beschreibungsText_size), text="Temperatur:")
 aktuelleTemp_label = Label(control.fenster, fg="blue4",
-                           font=("Arial", 60), text=control.aktuelleTemp)
+                           font=("Arial", 60), text=str(control.aktuelleTemp)+"\u00B0")
 
 # Start und Stop Buttons erzeugen
 start_button = Button(control.fenster, font=("Arial", 20), activebackground="green4", bg="green3",
@@ -217,6 +216,7 @@ aktuelleZeit_label = Label(control.fenster, font=("Arial", 35),
 
 # Saunabilder laden
 sauna_img = PhotoImage(file=os.path.join(OWN_PATH,"img/","sauna.png"))
+sauna_warten_img = PhotoImage(file=os.path.join(OWN_PATH,"img/","sauna_warten.png"))
 sauna_aktiv_img = PhotoImage(file=os.path.join(OWN_PATH,"img/","sauna_aktiv.png"))
 # Canvas erstellen und das Bild in dem Canvas erstellen
 sauna_canvas = Canvas(control.fenster, width=225, height=205)
