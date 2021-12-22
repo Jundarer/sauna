@@ -102,7 +102,7 @@ class kontroll_fenster:
             timeLabel['text'] = self.aktuelleZeit.strftime("%H:%M:%S")
             # Nach 1000ms diese Funktion wieder aufrufen
             timeLabel.after(1000, update)
-            # Falls der Timer am laufen ist mit der Soll-Zeit vergleichen und wenn gleich regeln
+            # Falls der Timer aktib ist die aktuelle Zeit mit der Soll-Zeit vergleichen und wenn gleich: regeln
             if self.timerAktiv:
                 if self.aktuelleZeit.strftime("%H:%M:%S") == self.sollZeit.strftime("%H:%M:%S"):
                     self.regeln()
@@ -138,19 +138,16 @@ class kontroll_fenster:
         # Umstellen des Boolean
         self.vollbild = not self.vollbild
         self.fenster.attributes("-fullscreen", self.vollbild)
-        return
 
     def vollbildBeenden(self, event=None):
         """Deaktiviert Vollbild"""
         self.vollbild = False
         self.fenster.attributes("-fullscreen", False)
-        return
 
     def vollbildStarten(self, event=None):
         """Aktiviert Vollbild"""
         self.vollbild = True
         self.fenster.attributes("-fullscreen", True)
-        return
 
 
 #Fenster-Überschrift
@@ -160,6 +157,7 @@ windowTitle = "Sauna Timer"
 control = kontroll_fenster()
 control.fenster.title(windowTitle)
 control.fenster.geometry("800x400")
+control.fenster.iconbitmap("img/sauna_icon.ico")
 
 # Groesse der Texte
 beschreibungsText_size = 15
@@ -217,8 +215,8 @@ aktuelleZeit_label = Label(control.fenster, font=("Arial", 35),
                            text=control.aktuelleZeit.strftime("%H:%M:%S"))
 
 # Saunabilder laden
-sauna_img = PhotoImage(file='sauna.png')
-sauna_aktiv_img = PhotoImage(file='sauna_aktiv.png')
+sauna_img = PhotoImage(file='img/sauna.png')
+sauna_aktiv_img = PhotoImage(file='img/sauna_aktiv.png')
 # Canvas erstellen und das Bild in dem Canvas erstellen
 sauna_canvas = Canvas(control.fenster, width=225, height=205)
 sauna_canvas.create_image(5, 5, anchor=NW, image=sauna_img)
