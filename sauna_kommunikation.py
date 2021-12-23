@@ -26,7 +26,7 @@ class sauna:
     def init_GPIO(self):
         """Konfiguriert die GPIO pins"""
         # GPIO konfig
-        if debug:
+        if not debug:
             GPIO.setmode(GPIO.BOARD)
             GPIO.setwarnings(False)
             for i in self.Rel_out:
