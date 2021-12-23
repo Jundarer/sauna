@@ -4,7 +4,6 @@ import os
 import sys
 import argparse
 import sauna_kommunikation
-#from RPi import GPIO # geht NUR im Raspi!
 
 # Initialisiert den Argument Parser, welches Parameter aus der Kommandozeile ausliest
 parser = argparse.ArgumentParser()
@@ -16,15 +15,24 @@ args = parser.parse_args()
 
 # Konstanten
 OWN_PATH = sys.path[0]
-TEMP_UPDATE_INTERVAL=2000
+TEMP_UPDATE_INTERVAL = 2000
+
+# Statustexte
+TEXT_TEMPERATUR = "Temperatur:"
+TEXT_SOLL_UHRZEIT = "Startzeit:"
+TEXT_IST_UHRZEIT = "Uhrzeit:"
+TEXT_WARTEN = "Warten auf Startzeit..."
+TEXT_INAKTIV = "Timer nicht aktiv"
+TEXT_REGELN = "Sauna wird geheizt!"
 
 # Helfer Funktion(en)
 def canvasBildErsetzen(canvas, neues_bild):
+    """Ersetzt ein Bild innerhalb eines Canvas"""
     canvas.delete('all')
     canvas.create_image(5, 5, anchor=NW, image=neues_bild)
 
-# Klasse, welche alles im Zusammenhang mit dem Fenster verwaltet
 class kontroll_fenster:
+    """Kontrolliert alle Elemente innerhalb eines Fensters"""
     def __init__(self):
         # Hauptfenster
         self.fenster = Tk()
@@ -40,20 +48,24 @@ class kontroll_fenster:
         # Wird gesetzt, falls die
         self.deviceFile = ""
 
-        self.sauna=sauna_kommunikation.sauna()
+        self.sauna = sauna_kommunikation.sauna()
         # inits
-        self.init()
+        self.config()
 
-        self.fenster.bind("<F11>", self.vollbildToggle)
-        self.fenster.bind("<Escape>", self.vollbildBeenden)
-
-    def init(self):
+    def config(self):
+        """Konfiguriert das Fenster und sonst alles was keine einfach Variable ist"""
         # Metadaten des Fensters setzen
         self.fenster.title(windowTitle)
         self.fenster.geometry("800x400")
-        self.fenster.iconbitmap(os.path.join(OWN_PATH,"img","sauna_icon.ico"))
+        self.fenster.iconbitmap(os.path.join(
+            OWN_PATH, "img", "sauna_icon.ico"))
+        self.fenster.bind("<F11>", self.vollbildToggle)
+        self.fenster.bind("<Escape>", self.vollbildBeenden)
+
         # Alle Information unter Minuten von der Schaltzeit entfernen
-        self.schaltZeit=self.schaltZeit-timedelta(seconds=self.schaltZeit.second,microseconds=self.schaltZeit.microsecond)
+        self.schaltZeit = self.schaltZeit - \
+            timedelta(seconds=self.schaltZeit.second,
+                      microseconds=self.schaltZeit.microsecond)
         # Falls mit dem Vollbild arg gestartet wurde, Vollbild akitivieren
         if self.vollbild:
             self.vollbildStarten()
@@ -62,7 +74,7 @@ class kontroll_fenster:
 
     def initSoll(self):
         """alten Sollwert(Temperatur) aus Datei holen"""
-        with open(os.path.join(OWN_PATH,"solltemp.ini"), "r+") as f:
+        with open(os.path.join(OWN_PATH, "solltemp.ini"), "r+") as f:
             neueTemp = f.read()
             if neueTemp != "":
                 self.sollTemp = float(neueTemp)
@@ -76,28 +88,27 @@ class kontroll_fenster:
     def saveSoll(self, temp):
         """gültige Soll-Temperatur für später sichern."""
         self.sollTemp = temp
-        with open(os.path.join(OWN_PATH,"solltemp.ini"), "w+") as f:
+        with open(os.path.join(OWN_PATH, "solltemp.ini"), "w+") as f:
             f.write(temp)
 
     def ausschalten(self):
         """"Stop-Taste gedrückt"""
         self.timerAktiv = False
-        aktuelleTemp_label.config(fg="blue4")
-        canvasBildErsetzen(sauna_canvas, sauna_img)
+        self.anpassungStatus(sauna_img, TEXT_INAKTIV, "blue4")
         self.sauna.stoppen()
 
     def starten(self):
         """Starten-Taste gedrückt"""
         self.timerAktiv = True
-        aktuelleTemp_label.config(fg="indian red")
-        canvasBildErsetzen(sauna_canvas, sauna_warten_img)
+        self.anpassungStatus(
+            sauna_warten_img, TEXT_WARTEN, "indian red")
         # Sauna bei neuem klicken von Start stoppen (?)
         self.sauna.stoppen()
 
     # nun gehts in die Hitze
     def regeln(self):
-        print("nun soll geregelt werden")
-        canvasBildErsetzen(sauna_canvas, sauna_aktiv_img)
+        """Initiert das regeln der Temperatur"""
+        self.anpassungStatus(sauna_aktiv_img, TEXT_REGELN, "orange red")
         # hier nun das "Regel-Werk"!
         self.sauna.starten(self.aktuelleTemp, self.sollTemp)
 
@@ -127,14 +138,21 @@ class kontroll_fenster:
                     with open(self.deviceFile) as f:
                         first, second = f.readlines()
                 tempString = second.split("=")[1]
-                tempLabel['text'] = str(int(tempString)/1000)+"\b00B0"
+                tempLabel.config(text=str(int(tempString)/1000)+"\b00B0")
             tempLabel.after(TEMP_UPDATE_INTERVAL, update)
         update()
 
     def anpassungZeit(self, hours, minutes):
         """Passt die Uhrzeit des sollTime labels relativ mit den gegeben Stunden und Minuten an"""
-        self.schaltZeit = self.schaltZeit+timedelta(hours=hours, minutes=minutes)
+        self.schaltZeit = self.schaltZeit + \
+            timedelta(hours=hours, minutes=minutes)
         schaltZeit_label.config(text=self.schaltZeit.strftime("%H:%M"))
+
+    def anpassungStatus(self, neuesBild, neuerText, neueTempFarbe):
+        """Wrapper Funktion, um alles was vom aussehen her sich bei einer Statusveraenderung veraendert anzupassen"""
+        canvasBildErsetzen(sauna_canvas, neuesBild)
+        statusText_label.config(text=neuerText)
+        aktuelleTemp_label.config(fg=neueTempFarbe)
 
     def initialisiereZeitTemp(self, timeLabel, tempLabel):
         """Initialisiert Zeit und Temp update loops mit den gegeben labels"""
@@ -165,7 +183,7 @@ windowTitle = "Sauna Timer"
 control = kontroll_fenster()
 
 # Groesse der Texte
-beschreibungsText_size = 15
+beschreibungsText_size = 18
 
 # Sollwert-Schieberegler erzeugen
 schieberegeler_scale = Scale(
@@ -174,9 +192,9 @@ schieberegeler_scale.set(control.sollTemp)
 
 # Schalt-Zeit-Fenster einrichten und Soll-Zeit anzeigen
 schaltZeitText_label = Label(control.fenster, font=("Arial", beschreibungsText_size),
-                           text="Startzeit:")
+                             text=TEXT_SOLL_UHRZEIT)
 schaltZeit_label = Label(control.fenster, font=("Arial", 35),
-                       text=control.schaltZeit.strftime("%H:%M"))
+                         text=control.schaltZeit.strftime("%H:%M"))
 
 # Zeitkontroll Buttons erzeugen
 stdText_label = Label(control.fenster, font=("Arial", 12),
@@ -198,7 +216,7 @@ minDown5_button = Button(control.fenster, font=("Arial", 13), height=1, width=6,
 
 # Ist-Temperatur Text erzeugen
 aktuelleTempText_label = Label(control.fenster,
-                               font=("Arial", beschreibungsText_size), text="Temperatur:")
+                               font=("Arial", beschreibungsText_size), text=TEXT_TEMPERATUR)
 aktuelleTemp_label = Label(control.fenster, fg="blue4",
                            font=("Arial", 60), text=str(control.aktuelleTemp)+"\u00B0")
 
@@ -210,28 +228,35 @@ stop_button = Button(control.fenster, font=("Arial", 20), activebackground="fire
 
 # Aktuelle Uhrzeit Text erzeugen
 aktuelleZeitText_label = Label(control.fenster, font=("Arial", beschreibungsText_size),
-                               text="Uhrzeit:")
+                               text=TEXT_IST_UHRZEIT)
 aktuelleZeit_label = Label(control.fenster, font=("Arial", 35),
                            text=control.aktuelleZeit.strftime("%H:%M:%S"))
 
+# Statustext
+statusText_label = Label(control.fenster, font=("Arial bold", 18),
+                         text=TEXT_INAKTIV, width=18)
+
 # Saunabilder laden
-sauna_img = PhotoImage(file=os.path.join(OWN_PATH,"img/","sauna.png"))
-sauna_warten_img = PhotoImage(file=os.path.join(OWN_PATH,"img/","sauna_warten.png"))
-sauna_aktiv_img = PhotoImage(file=os.path.join(OWN_PATH,"img/","sauna_aktiv.png"))
+sauna_img = PhotoImage(file=os.path.join(OWN_PATH, "img/", "sauna.png"))
+sauna_warten_img = PhotoImage(file=os.path.join(
+    OWN_PATH, "img/", "sauna_warten.png"))
+sauna_aktiv_img = PhotoImage(file=os.path.join(
+    OWN_PATH, "img/", "sauna_aktiv.png"))
 # Canvas erstellen und das Bild in dem Canvas erstellen
-sauna_canvas = Canvas(control.fenster, width=225, height=205)
+sauna_canvas = Canvas(control.fenster, width=225, height=197)
 sauna_canvas.create_image(5, 5, anchor=NW, image=sauna_img)
 
 # Positionierung aller Elemente
+beschreibungsTextY = 3
 schieberegeler_scale.place(x=0, y=0)
-aktuelleTempText_label.place(x=170, y=3)
+aktuelleTempText_label.place(x=170, y=beschreibungsTextY)
 aktuelleTemp_label.place(x=170, y=30, width=125, height=125)
 
 start_button.place(x=170, y=200, width=125, height=70)
 stop_button.place(x=170, y=290, width=125, height=70)
 
-schaltZeitText_label.place(x=375, y=3)
-schaltZeit_label.place(x=365, y=60)
+schaltZeitText_label.place(x=375, y=beschreibungsTextY)
+schaltZeit_label.place(x=362, y=60)
 
 stdText_label.place(x=350, y=180)
 minText_label.place(x=430, y=180)
@@ -242,23 +267,13 @@ stdDown_button.place(x=350, y=285)
 minDown_button.place(x=430, y=285)
 minDown5_button.place(x=430, y=325)
 
-aktuelleZeitText_label.place(x=630, y=3)
+aktuelleZeitText_label.place(x=630, y=beschreibungsTextY)
 aktuelleZeit_label.place(x=580, y=60)
 
-sauna_canvas.place(x=550, y=160)
-# GPIO konfig
-# GPIO.setmode(GPIO.BOARD)
-# GPIO.setwarnings(False)
-# for i in Rel_out:
-#     GPIO.setup(i, GPIO.OUT)
-#     GPIO.output(i, False) # Am Anfang alles auf Null!
-# nun sind die out-pins konfiguriert!
+statusText_label.place(x=520, y=350)
 
-# Ermitteln des Temperatur-Files (Seite 315) gilt NUR für den PI!
-# und der Sensor MUSS angeschlossen sein!
-#os.system("modprobe wire")      # modprobe nicht nötig
-#os.system("modprobe w1-gpio")   # ist in boot-config festgelegt
-#os.system("modprobe w1-therm")
+sauna_canvas.place(x=550, y=150)
+
 
 # Startet den Loop, um die Zeit und Temperatur zu updaten mit den gegeben Labels
 control.initialisiereZeitTemp(aktuelleZeit_label, aktuelleTemp_label)
