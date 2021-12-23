@@ -1,3 +1,8 @@
+"""Sauna Timer für Touchbildschirme
+Programmiert für die Vechelder Sauna von Quirin und Dietmar
+Frohe Weihnachten! 
+"""
+
 from tkinter import *
 from datetime import datetime, timedelta
 import os
@@ -17,6 +22,10 @@ args = parser.parse_args()
 OWN_PATH = sys.path[0]
 TEMP_UPDATE_INTERVAL = 2000
 FONT_STANDARD = "Arial"
+TEMP_MIN = 60
+TEMP_MAX = 95
+# Veränderung benötigt Anpassung aller Koordinaten!
+BILDSCHIRM_DIMENSION="800x400"
 
 # Statustexte
 TEXT_TEMPERATUR = "Temperatur:"
@@ -58,7 +67,7 @@ class kontroll_fenster:
         """Konfiguriert das Fenster und sonst alles was keine einfach Variable ist"""
         # Metadaten des Fensters setzen
         self.fenster.title(windowTitle)
-        self.fenster.geometry("800x400")
+        self.fenster.geometry(BILDSCHIRM_DIMENSION)
         self.fenster.iconbitmap(os.path.join(
             OWN_PATH, "img", "sauna_icon.ico"))
         self.fenster.bind("<F11>", self.vollbildToggle)
@@ -91,6 +100,10 @@ class kontroll_fenster:
         """Soll-Temperatur updaten und speichern"""
         self.sollTemp = temp
         schieberegelerText_label.config(text=str(temp)+TEXT_GRAD)
+        # Neue Koordinaten des Reglers holen und den Text an diese Koordinaten anpassen
+        newCoords=schieberegeler_scale.coords()
+        schieberegelerText_label.place(x=newCoords[0]+50,y=newCoords[1]-15)
+        # Speichern der neuen Temperatur in der .ini
         with open(os.path.join(OWN_PATH, "solltemp.ini"), "w+") as f:
             f.write(temp)
 
@@ -152,7 +165,7 @@ class kontroll_fenster:
         schaltZeit_label.config(text=self.schaltZeit.strftime("%H:%M"))
 
     def anpassungStatus(self, neuesBild, neuerText, neueTempFarbe):
-        """Wrapper Funktion, um alles was vom aussehen her sich bei einer Statusveraenderung veraendert anzupassen"""
+        """Wrapper Funktion, um alles was vom aussehen her sich bei einer Statusveränderung verändert anzupassen"""
         canvasBildErsetzen(sauna_canvas, neuesBild)
         statusText_label.config(text=neuerText)
         aktuelleTemp_label.config(fg=neueTempFarbe)
@@ -163,7 +176,7 @@ class kontroll_fenster:
         self.tempUpdate(tempLabel)
 
     def vollbildToggle(self, event=None):
-        """Aktiviert Vollbild falls nicht aktiv und deaktiviert ihn sonst. Der event Parameter wird von tkinter benoetigt."""
+        """Aktiviert Vollbild falls nicht aktiv und deaktiviert ihn sonst. Der event Parameter wird von tkinter benötigt."""
         # Umstellen des Boolean
         self.vollbild = not self.vollbild
         self.fenster.attributes("-fullscreen", self.vollbild)
@@ -185,12 +198,12 @@ windowTitle = "Sauna Timer"
 # Fenster einrichten
 control = kontroll_fenster()
 
-# Groesse der Texte
+# Grösse der Texte
 beschreibungsText_size = 18
 
 # Sollwert-Schieberegler erzeugen
 schieberegeler_scale = Scale(
-    control.fenster, font=(FONT_STANDARD, 15), from_=95, to=60, tickinterval=5, length=390, width=100, sliderlength=60, command=control.updateSoll, showvalue=False)
+    control.fenster, font=(FONT_STANDARD, 15), from_=TEMP_MAX, to=TEMP_MIN, tickinterval=5, length=390, width=100, sliderlength=60, command=control.updateSoll, showvalue=False)
 schieberegeler_scale.set(control.sollTemp)
 
 schieberegelerText_label=Label(control.fenster, font=(FONT_STANDARD+" bold", 18),
@@ -255,7 +268,7 @@ sauna_canvas.create_image(5, 5, anchor=NW, image=sauna_img)
 # Positionierung aller Elemente
 beschreibungsTextY = 3
 schieberegeler_scale.place(x=0, y=0)
-schieberegelerText_label.place(x=130, y=190)
+schieberegelerText_label.place(x=130, y=80)
 aktuelleTempText_label.place(x=180, y=beschreibungsTextY)
 aktuelleTemp_label.place(x=185, y=30, width=125, height=125)
 
