@@ -16,6 +16,7 @@ args = parser.parse_args()
 # Konstanten
 OWN_PATH = sys.path[0]
 TEMP_UPDATE_INTERVAL = 2000
+FONT_STANDARD = "Arial"
 
 # Statustexte
 TEXT_TEMPERATUR = "Temperatur:"
@@ -24,6 +25,7 @@ TEXT_IST_UHRZEIT = "Uhrzeit:"
 TEXT_WARTEN = "Warten auf Startzeit..."
 TEXT_INAKTIV = "Timer nicht aktiv"
 TEXT_REGELN = "Sauna wird geheizt!"
+TEXT_GRAD = "\u00B0"
 
 # Helfer Funktion(en)
 def canvasBildErsetzen(canvas, neues_bild):
@@ -85,9 +87,10 @@ class kontroll_fenster:
                 if d.startswith("10") or d.startswith("28"):
                     self.deviceFile = "/sys/bus/w1/devices/" + d + "/w1_slave"
 
-    def saveSoll(self, temp):
-        """gültige Soll-Temperatur für später sichern."""
+    def updateSoll(self, temp):
+        """Soll-Temperatur updaten und speichern"""
         self.sollTemp = temp
+        schieberegelerText_label.config(text=str(temp)+TEXT_GRAD)
         with open(os.path.join(OWN_PATH, "solltemp.ini"), "w+") as f:
             f.write(temp)
 
@@ -187,53 +190,56 @@ beschreibungsText_size = 18
 
 # Sollwert-Schieberegler erzeugen
 schieberegeler_scale = Scale(
-    control.fenster, font=("Arial", 15), from_=95, to=60, tickinterval=5, length=390, width=100, sliderlength=60, command=control.saveSoll)
+    control.fenster, font=(FONT_STANDARD, 15), from_=95, to=60, tickinterval=5, length=390, width=100, sliderlength=60, command=control.updateSoll, showvalue=False)
 schieberegeler_scale.set(control.sollTemp)
 
+schieberegelerText_label=Label(control.fenster, font=(FONT_STANDARD+" bold", 18),
+                             text=str(schieberegeler_scale.get())+TEXT_GRAD)
+
 # Schalt-Zeit-Fenster einrichten und Soll-Zeit anzeigen
-schaltZeitText_label = Label(control.fenster, font=("Arial", beschreibungsText_size),
+schaltZeitText_label = Label(control.fenster, font=(FONT_STANDARD, beschreibungsText_size),
                              text=TEXT_SOLL_UHRZEIT)
-schaltZeit_label = Label(control.fenster, font=("Arial", 35),
+schaltZeit_label = Label(control.fenster, font=(FONT_STANDARD, 35),
                          text=control.schaltZeit.strftime("%H:%M"))
 
 # Zeitkontroll Buttons erzeugen
-stdText_label = Label(control.fenster, font=("Arial", 12),
+stdText_label = Label(control.fenster, font=(FONT_STANDARD, 12),
                       text="Stunden:")
-minText_label = Label(control.fenster, font=("Arial", 12),
+minText_label = Label(control.fenster, font=(FONT_STANDARD, 12),
                       text="Minuten:")
-stdUp_button = Button(control.fenster, font=("Arial", 28),
+stdUp_button = Button(control.fenster, font=(FONT_STANDARD, 28),
                       text="\u25b2", command=lambda: control.anpassungZeit(1, 0))
-stdDown_button = Button(control.fenster, font=("Arial", 28),
+stdDown_button = Button(control.fenster, font=(FONT_STANDARD, 28),
                         text="\u25bc", command=lambda: control.anpassungZeit(-1, 0))
-minUp_button = Button(control.fenster, font=("Arial", 13), height=1, width=6,
+minUp_button = Button(control.fenster, font=(FONT_STANDARD, 13), height=1, width=6,
                       text="\u25b2", command=lambda: control.anpassungZeit(0, 1))
-minDown_button = Button(control.fenster, font=("Arial", 13), height=1, width=6,
+minDown_button = Button(control.fenster, font=(FONT_STANDARD, 13), height=1, width=6,
                         text="\u25bc", command=lambda: control.anpassungZeit(0, -1))
-minUp5_button = Button(control.fenster, font=("Arial", 13), height=1, width=6,
+minUp5_button = Button(control.fenster, font=(FONT_STANDARD, 13), height=1, width=6,
                        text="\u25b2x5", command=lambda: control.anpassungZeit(0, 5))
-minDown5_button = Button(control.fenster, font=("Arial", 13), height=1, width=6,
+minDown5_button = Button(control.fenster, font=(FONT_STANDARD, 13), height=1, width=6,
                          text="\u25bcx5", command=lambda: control.anpassungZeit(0, -5))
 
 # Ist-Temperatur Text erzeugen
 aktuelleTempText_label = Label(control.fenster,
-                               font=("Arial", beschreibungsText_size), text=TEXT_TEMPERATUR)
+                               font=(FONT_STANDARD, beschreibungsText_size), text=TEXT_TEMPERATUR)
 aktuelleTemp_label = Label(control.fenster, fg="blue4",
-                           font=("Arial", 60), text=str(control.aktuelleTemp)+"\u00B0")
+                           font=(FONT_STANDARD, 60), text=str(control.aktuelleTemp)+TEXT_GRAD)
 
 # Start und Stop Buttons erzeugen
-start_button = Button(control.fenster, font=("Arial", 20), activebackground="green4", bg="green3",
+start_button = Button(control.fenster, font=(FONT_STANDARD, 20), activebackground="green4", bg="green3",
                       relief=RAISED, text="Start", command=control.starten)
-stop_button = Button(control.fenster, font=("Arial", 20), activebackground="firebrick4", bg="firebrick3",
+stop_button = Button(control.fenster, font=(FONT_STANDARD, 20), activebackground="firebrick4", bg="firebrick3",
                      relief=RAISED, text="Stop", command=control.ausschalten)
 
 # Aktuelle Uhrzeit Text erzeugen
-aktuelleZeitText_label = Label(control.fenster, font=("Arial", beschreibungsText_size),
+aktuelleZeitText_label = Label(control.fenster, font=(FONT_STANDARD, beschreibungsText_size),
                                text=TEXT_IST_UHRZEIT)
-aktuelleZeit_label = Label(control.fenster, font=("Arial", 35),
+aktuelleZeit_label = Label(control.fenster, font=(FONT_STANDARD, 35),
                            text=control.aktuelleZeit.strftime("%H:%M:%S"))
 
 # Statustext
-statusText_label = Label(control.fenster, font=("Arial bold", 18),
+statusText_label = Label(control.fenster, font=(FONT_STANDARD+"bold", 18),
                          text=TEXT_INAKTIV, width=18)
 
 # Saunabilder laden
@@ -249,11 +255,12 @@ sauna_canvas.create_image(5, 5, anchor=NW, image=sauna_img)
 # Positionierung aller Elemente
 beschreibungsTextY = 3
 schieberegeler_scale.place(x=0, y=0)
-aktuelleTempText_label.place(x=170, y=beschreibungsTextY)
-aktuelleTemp_label.place(x=170, y=30, width=125, height=125)
+schieberegelerText_label.place(x=130, y=190)
+aktuelleTempText_label.place(x=180, y=beschreibungsTextY)
+aktuelleTemp_label.place(x=185, y=30, width=125, height=125)
 
-start_button.place(x=170, y=200, width=125, height=70)
-stop_button.place(x=170, y=290, width=125, height=70)
+start_button.place(x=185, y=200, width=125, height=70)
+stop_button.place(x=185, y=290, width=125, height=70)
 
 schaltZeitText_label.place(x=375, y=beschreibungsTextY)
 schaltZeit_label.place(x=362, y=60)
@@ -270,7 +277,7 @@ minDown5_button.place(x=430, y=325)
 aktuelleZeitText_label.place(x=630, y=beschreibungsTextY)
 aktuelleZeit_label.place(x=580, y=60)
 
-statusText_label.place(x=520, y=350)
+statusText_label.place(x=530, y=350)
 
 sauna_canvas.place(x=550, y=150)
 
