@@ -95,7 +95,8 @@ class kontroll_fenster:
         if os.path.isdir("/sys/bus/w1/devices"):
             for d in os.listdir("/sys/bus/w1/devices"):
                 if d.startswith("10") or d.startswith("28"):
-                    self.deviceFile = "/sys/bus/w1/devices/" + d + "/w1_slave"
+                    if os.path.isfile("/sys/bus/w1/devices/" + d + "/w1_slave"):
+                        self.deviceFile = "/sys/bus/w1/devices/" + d + "/w1_slave"
 
     def updateSoll(self, temp):
         """Soll-Temperatur updaten und speichern"""
