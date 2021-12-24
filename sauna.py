@@ -25,7 +25,7 @@ FONT_STANDARD = "Arial"
 TEMP_MIN = 60
 TEMP_MAX = 95
 # Veränderung benötigt Anpassung aller Koordinaten!
-BILDSCHIRM_DIMENSION="800x400"
+BILDSCHIRM_DIMENSION="800x480"
 
 # Statustexte
 TEXT_TEMPERATUR = "Temperatur:"
