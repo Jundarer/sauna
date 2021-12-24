@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Sauna Timer für Touchbildschirme
 Programmiert für die Vechelder Sauna von Quirin und Dietmar
 Frohe Weihnachten! 
