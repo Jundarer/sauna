@@ -69,8 +69,8 @@ class kontroll_fenster:
         # Metadaten des Fensters setzen
         self.fenster.title(windowTitle)
         self.fenster.geometry(BILDSCHIRM_DIMENSION)
-        self.fenster.iconbitmap(os.path.join(
-            OWN_PATH, "img", "sauna_icon.ico"))
+ #       self.fenster.iconbitmap(os.path.join(
+ #           OWN_PATH, "img", "sauna_icon.ico"))
         self.fenster.bind("<F11>", self.vollbildToggle)
         self.fenster.bind("<Escape>", self.vollbildBeenden)
 
