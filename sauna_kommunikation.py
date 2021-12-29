@@ -3,7 +3,7 @@ import os
 debug=False
 try:
     from RPi import GPIO
-except ImportError:
+except (ImportError,RuntimeError) as e:
     print("Modul wird im Debug-Modus gestartet, da das RPi Modul nicht gefunden wurde")
     debug=True
 
@@ -44,7 +44,7 @@ class sauna:
         """Startet die Sauna mit der gegeben Ziel Temperatur"""
         print("Sauna startet mit dem Ziel {} Grad".format(sollTemp))
         
-        
+
 
 
 

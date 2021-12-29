@@ -7,8 +7,8 @@ stufenMerker = 4 # volle Leistung
 def Firstloop():
     while Heizein:
         sleep(10)
-        if aktuelleTemp - sollTemp >= 3
-        Heizein = 0
+        if aktuelleTemp - sollTemp >= 3:
+            Heizein = 0
 
 def setport(): # erwartet 'MERKER'
     for i in Rel_out:
@@ -16,7 +16,7 @@ def setport(): # erwartet 'MERKER'
 
 setport()
 def regeln1():
-    if Heizein          # solange im ersten Lauf aktTmp-Solltmp < 3
+    if Heizein:          # solange im ersten Lauf aktTmp-Solltmp < 3
         Firstloop() # hier getestet
 if Heizein:
     regeln1()       # in sich selbst kreiseln!
