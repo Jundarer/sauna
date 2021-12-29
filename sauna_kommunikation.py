@@ -43,6 +43,11 @@ class sauna:
     def starten(self, aktuelleTemp, sollTemp):
         """Startet die Sauna mit der gegeben Ziel Temperatur"""
         print("Sauna startet mit dem Ziel {} Grad".format(sollTemp))
+        
+        
+
+
+
     
     def stoppen(self):
         """Stoppt das Heizen der Sauna"""

@@ -1,0 +1,56 @@
+Regel-Routine in Basic!
+
+'dektmp = aktuelle Temp. (in 1/10°)
+'solltmp = Vorgabetemp. (in °)
+'oldtmp = letzte dektmp
+'Heizein = 3 beim 1. hochlaufen und = 0 für die restliche Regelzeit
+' MERKER = Heizstufe (0 - 4)
+
+
+#Start
+
+#heizloop
+' 30 sec. bis zur nächsten Messung
+oldtemp = dektmp ' alte Temp. festhalten
+gosub temptst
+if Heizein then gosub Firstloop ' beim 1. Lauf 3° mehr!
+if Heizein then goto heizloop   '        "
+if dektmp - (10 * solltemp) < 20 then port1 = KW0 else goto weiter1
+MERKER = 0 ' bei meht als +2° sofort aus!
+#weiter1
+  if (10 * solltemp) - dektmp > 50 port1 = KW4 else goto finetmp
+  MERKER = 4 ' bei mehr als -5° alles ein
+#finetmp
+  if dektmp < (10 * solltmp - 5) then gosub erhöhen ' wenn IST kleiner SOLL -0,5°
+  if dektmp < (10 * solltmp + 5) then gosub vermindern ' ähnlich! oben
+goto heizloop ' unendliche Schleife wenn kein Abbruch
+#ABBRUCH
+  goto START
+end  '  vorsorglich!
+
+# Firstloop
+   if dektmp + ( 10 * Solltemp) < 30 then return
+   Heizein = 0
+return
+
+#erhöhen
+if oldtemp < dektmp and dektmp < (solltemp * 10) then goto hoch ' fallend und IST < SOLL
+if oldtemp > dektmp and dektmp < (solltemp * 10 - 30) then goto hoch ' steigend und IST < SOLL - 3
+if dektemp > solltemp * 10 - 15 then goto runter ' Diff. < -1,5°, steigend, dann einen runter
+
+#hoch
+  if MERKER = 4 then return 'geht nicht höher
+  MERKER = MERKER + 1
+  looktab leistung,merker,port1 ' port nach tabelle setzen
+return
+
+#vermindern
+  if oldtmp < dectemp then goto runter ' steigend über SOLL
+  if oldtmp > dektmp and detmp > (solltmp * 10 + 10) then goto runter 'fallend und IST > SOLL + 1
+  goto hoch ' fallend und IST < SOLL + 1
+  #runter
+    if MERKER = 0 then return ' geht nicht tiefer
+    MERKER = MERKER - 1
+    looktab leistung,merker,port1
+return
+
