@@ -121,7 +121,7 @@ class kontroll_fenster:
         self.anpassungStatus(
             sauna_warten_img, TEXT_WARTEN, "indian red")
         # Sauna bei neuem klicken von Start stoppen (?)
-        self.sauna.stoppen()
+        # self.sauna.stoppen()
 
     # nun gehts in die Hitze
     def regeln(self):

@@ -1,4 +1,8 @@
 import os
+from time import *
+from RPi import GPIO
+Heizein = 3 # erstes Anheizen mit +3° !
+stufenMerker = 4 # volle Leistung
 
 debug=False
 try:
@@ -43,8 +47,34 @@ class sauna:
     def starten(self, aktuelleTemp, sollTemp):
         """Startet die Sauna mit der gegeben Ziel Temperatur"""
         print("Sauna startet mit dem Ziel {} Grad".format(sollTemp))
-        
 
+    def Firstloop():
+        while Heizein:
+            sleep(10)
+            if aktuelleTemp(self) - sollTemp(self) >= 3:
+                Heizein = 0
+
+    def setport(): # erwartet 'MERKER'
+        for i in self.Rel_out:
+            GPIO.output(i, (self.leistungsStufe(stufenMerker)))
+                
+    setport() # volle Kraft voraus
+
+    def regeln1():
+        if Heizein:          # solange im ersten Lauf aktTmp-Solltmp < 3
+            Firstloop()      # hier getestet
+        if Heizein:
+            regeln1()        # in sich selbst kreiseln!
+        if aktuelleTemp - sollTemp < 2:
+            leistungsMerker = 0  # bei mehr als +2° sofort aus
+            setport()
+        if sollTemp - aktuelleTemp > 5:
+            leistungsMerker = 4  # bei mehr als -5° alles ein
+            setport()
+            
+
+            for i in Rel_out:
+                GPIO.output(i, False)
 
 
 
