@@ -146,7 +146,7 @@ class kontroll_fenster:
         """Gleiches Prinzip wie in zeitUpdate"""
         def update():
             # Temp updates
-            tempLabel.config(text=str(self.sauna.aktuelleTemp)+TEXT_GRAD)
+            tempLabel.config(text=str(int(self.sauna.aktuelleTemp))+TEXT_GRAD)
             tempLabel.after(TEMP_UPDATE_INTERVAL, update)
         update()
 

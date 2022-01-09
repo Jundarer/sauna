@@ -18,7 +18,7 @@ class sauna:
 
     def __init__(self):
         self.deviceFile = ""
-        self.aktuelleTemp = 0
+        self.aktuelleTemp = 70
         self.sollTemp = 0
         self.deltaTemp = 0
         # GPIO Variablen
@@ -40,6 +40,9 @@ class sauna:
         self.aktuelleTempUpdateThread = threading.Thread(
             target=self.tempUpdate, args=())
         self.aktuelleTempUpdateThread.daemon = True
+        self.aktuelleTempUpdateDebugThread = threading.Thread(
+            target=self.tempUpdateDebug, args=())
+        self.aktuelleTempUpdateDebugThread.daemon = True
         self.saunaSteuerungThread = threading.Thread(
             target=self.saunaLoop, args=())
         self.saunaSteuerungThread.daemon = True
@@ -73,6 +76,9 @@ class sauna:
         # Thread nur starten, wenn die Temperatur geupdatet werden kann
         if(os.path.isfile(self.deviceFile)):
             self.aktuelleTempUpdateThread.start()
+        # Sonst im Debug Modus die Sauna simulieren        
+        elif debug:
+            self.aktuelleTempUpdateDebugThread.start()
         self.saunaSteuerungThread.start()
 
     def starten(self):
@@ -99,6 +105,15 @@ class sauna:
             self.deltaTemp = neueTemp-self.aktuelleTemp
             self.aktuelleTemp = neueTemp
             sleep(AKTUELLE_TEMP_UPDATE_INTERVAL)
+    
+    # Simuliert die Sauna (allerdings ohne Traegheit, aber besser als nichts)
+    def tempUpdateDebug(self):
+        while(True):
+            neueTemp = self.aktuelleTemp+(self.stufenMerker/4)-0.2
+            print("Neue Temp: "+str(neueTemp)+"\nAlte Temp: "+str(self.aktuelleTemp)+"\nMerker: "+str(self.stufenMerker)+"\n")
+            self.deltaTemp = neueTemp-self.aktuelleTemp
+            self.aktuelleTemp = neueTemp
+            sleep(AKTUELLE_TEMP_UPDATE_INTERVAL)
 
     def saunaLoop(self):
         # Dieser Loop läuft dauernd, fuehrt aber nur die Logik, wenn die Sauna aktiv ist.
@@ -117,6 +132,8 @@ class sauna:
                 elif self.sollTemp-self.aktuelleTemp <= -0.5:
                     self.vermindern()
                 self.updatePorts()
+                if debug:
+                    print("Saunaleistung wurd aktualisiert auf: "+str(self.stufenMerker))
                 sleep(SAUNA_UPDATE_INTERVAL)
             # Warte bis die Sauna aktiviert wird
             sleep(1)
