@@ -21,10 +21,10 @@ args = parser.parse_args()
 
 # Konstanten
 OWN_PATH = sys.path[0]
-TEMP_UPDATE_INTERVAL = 2000
 FONT_STANDARD = "Arial"
 TEMP_MIN = 60
 TEMP_MAX = 95
+TEMP_UPDATE_INTERVAL=3000
 # Veränderung benötigt Anpassung aller Koordinaten!
 BILDSCHIRM_DIMENSION="800x480"
 
@@ -51,7 +51,6 @@ class kontroll_fenster:
         # Zeit+Temperatur Variablen
         self.aktuelleZeit = datetime.now()
         self.schaltZeit = datetime.now()
-        self.aktuelleTemp = 70
         self.sollTemp = 0
         # Status Variablen
         self.timerAktiv = False         # Hilfsmarke geplant zum stoppen
@@ -81,7 +80,6 @@ class kontroll_fenster:
         # Falls mit dem Vollbild arg gestartet wurde, Vollbild akitivieren
         if self.vollbild:
             self.vollbildStarten()
-        self.initDeviceFile()
         self.initSoll()
 
     def initSoll(self):
@@ -90,17 +88,15 @@ class kontroll_fenster:
             neueTemp = f.read()
             if neueTemp != "":
                 self.sollTemp = float(neueTemp)
+                # Der Sauna von dem Update der Temperatur Bescheid geben
+                self.sauna.sollTemp=self.sollTemp
 
-    def initDeviceFile(self):
-        if os.path.isdir("/sys/bus/w1/devices"):
-            for d in os.listdir("/sys/bus/w1/devices"):
-                if d.startswith("10") or d.startswith("28"):
-                    if os.path.isfile("/sys/bus/w1/devices/" + d + "/w1_slave"):
-                        self.deviceFile = "/sys/bus/w1/devices/" + d + "/w1_slave"
 
     def updateSoll(self, temp):
         """Soll-Temperatur updaten und speichern"""
-        self.sollTemp = temp
+        self.sollTemp = float(temp)
+        # Der Sauna von dem Update der Temperatur Bescheid geben
+        self.sauna.sollTemp=self.sollTemp
         schieberegelerText_label.config(text=str(temp)+TEXT_GRAD)
         # Neue Koordinaten des Reglers holen und den Text an diese Koordinaten anpassen
         newCoords=schieberegeler_scale.coords()
@@ -128,7 +124,7 @@ class kontroll_fenster:
         """Initiert das regeln der Temperatur"""
         self.anpassungStatus(sauna_aktiv_img, TEXT_REGELN, "orange red")
         # hier nun das "Regel-Werk"!
-        self.sauna.starten(self.aktuelleTemp, self.sollTemp)
+        self.sauna.starten()
 
     def zeitUpdate(self, timeLabel):
         """Definiert und initalisiert die Zeit updates"""
@@ -150,13 +146,7 @@ class kontroll_fenster:
         """Gleiches Prinzip wie in zeitUpdate"""
         def update():
             # Temp updates
-            if os.path.isfile(self.deviceFile):
-                first, second = ""
-                while first.find("YES") == -1:
-                    with open(self.deviceFile) as f:
-                        first, second = f.readlines()
-                tempString = second.split("=")[1]
-                tempLabel.config(text=str(int(tempString)/1000)+"\b00B0")
+            tempLabel.config(text=str(self.sauna.aktuelleTemp)+TEXT_GRAD)
             tempLabel.after(TEMP_UPDATE_INTERVAL, update)
         update()
 
@@ -239,7 +229,7 @@ minDown5_button = Button(control.fenster, font=(FONT_STANDARD, 13), height=1, wi
 aktuelleTempText_label = Label(control.fenster,
                                font=(FONT_STANDARD, beschreibungsText_size), text=TEXT_TEMPERATUR)
 aktuelleTemp_label = Label(control.fenster, fg="blue4",
-                           font=(FONT_STANDARD, 60), text=str(control.aktuelleTemp)+TEXT_GRAD)
+                           font=(FONT_STANDARD, 60), text=str(control.sauna.aktuelleTemp)+TEXT_GRAD)
 
 # Start und Stop Buttons erzeugen
 start_button = Button(control.fenster, font=(FONT_STANDARD, 20), activebackground="green4", bg="green3",
