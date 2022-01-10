@@ -21,6 +21,7 @@ class sauna:
         self.aktuelleTemp = 70
         self.sollTemp = 0
         self.deltaTemp = 0
+        self.ersterStart = True
         # GPIO Variablen
         self.Rel_out = (31, 33, 35, 37)  # GPIO-Pins (N, R, S, T)
         #Def. Leistungs-Stufen
@@ -76,7 +77,7 @@ class sauna:
         # Thread nur starten, wenn die Temperatur geupdatet werden kann
         if(os.path.isfile(self.deviceFile)):
             self.aktuelleTempUpdateThread.start()
-        # Sonst im Debug Modus die Sauna simulieren        
+        # Sonst im Debug Modus die Sauna simulieren
         elif debug:
             self.aktuelleTempUpdateDebugThread.start()
         self.saunaSteuerungThread.start()
@@ -89,7 +90,7 @@ class sauna:
 
     def stoppen(self):
         """Stoppt das Heizen der Sauna"""
-        self.saunaAktiv=False
+        self.saunaAktiv = False
         self.stufenMerker = 0
         self.updatePorts()
         print("Sauna gestoppt!")
@@ -105,12 +106,13 @@ class sauna:
             self.deltaTemp = neueTemp-self.aktuelleTemp
             self.aktuelleTemp = neueTemp
             sleep(AKTUELLE_TEMP_UPDATE_INTERVAL)
-    
+
     # Simuliert die Sauna (allerdings ohne Traegheit, aber besser als nichts)
     def tempUpdateDebug(self):
         while(True):
             neueTemp = self.aktuelleTemp+(self.stufenMerker/4)-0.2
-            print("Neue Temp: "+str(neueTemp)+"\nAlte Temp: "+str(self.aktuelleTemp)+"\nMerker: "+str(self.stufenMerker)+"\n")
+            print("Neue Temp: "+str(neueTemp)+"\nAlte Temp: " +
+                  str(self.aktuelleTemp)+"\nStufe: "+str(self.stufenMerker)+"\n")
             self.deltaTemp = neueTemp-self.aktuelleTemp
             self.aktuelleTemp = neueTemp
             sleep(AKTUELLE_TEMP_UPDATE_INTERVAL)
@@ -119,21 +121,30 @@ class sauna:
         # Dieser Loop läuft dauernd, fuehrt aber nur die Logik, wenn die Sauna aktiv ist.
         while (True):
             while self.saunaAktiv:
+                # bei dem ersten Start bis 3° + auf voller Leistung heizen
+                if self.ersterStart:
+                    if self.sollTemp-self.aktuelleTemp >= -3:
+                        self.stufenMerker = 4
+                    else:
+                        self.ersterStart = False
+                # Wenn wir nicht mehr im ersten Start-Modus sind
+                if not self.ersterStart:
                 # bei mehr als 5° - sofort volle Leistung
-                if self.sollTemp-self.aktuelleTemp >= 5:
-                    self.stufenMerker = 4
-                # bei mehr als 2° + sofort aus
-                elif self.sollTemp-self.aktuelleTemp <= -2:
-                    self.stufenMerker = 0
-                # bei mehr als 0.5° - erhöhen
-                elif self.sollTemp-self.aktuelleTemp >= 0.5:
-                    self.erhöhen()
-                # bei mehr als 0.5° + vermindern
-                elif self.sollTemp-self.aktuelleTemp <= -0.5:
-                    self.vermindern()
+                    if self.sollTemp-self.aktuelleTemp >= 5:
+                        self.stufenMerker = 4
+                    # bei mehr als 2° + sofort aus
+                    elif self.sollTemp-self.aktuelleTemp <= -2:
+                        self.stufenMerker = 0
+                    # bei mehr als 0.5° - erhöhen
+                    elif self.sollTemp-self.aktuelleTemp >= 0.5:
+                        self.erhöhen()
+                    # bei mehr als 0.5° + vermindern
+                    elif self.sollTemp-self.aktuelleTemp <= -0.5:
+                        self.vermindern()
                 self.updatePorts()
                 if debug:
-                    print("Saunaleistung wurd aktualisiert auf: "+str(self.stufenMerker))
+                    print("Saunaleistung wurd aktualisiert auf: " +
+                          str(self.stufenMerker))
                 sleep(SAUNA_UPDATE_INTERVAL)
             # Warte bis die Sauna aktiviert wird
             sleep(1)
