@@ -111,8 +111,8 @@ class sauna:
     def tempUpdateDebug(self):
         while(True):
             neueTemp = self.aktuelleTemp+(self.stufenMerker/4)-0.2
-            print("Neue Temp: "+str(neueTemp)+"\nAlte Temp: " +
-                  str(self.aktuelleTemp)+"\nStufe: "+str(self.stufenMerker)+"\n")
+            print("Neue Temp: "+str(round(neueTemp,1))+"\nAlte Temp: " +
+                  str(round(self.aktuelleTemp,1))+"\nStufe: "+str(self.stufenMerker)+"\n")
             self.deltaTemp = neueTemp-self.aktuelleTemp
             self.aktuelleTemp = neueTemp
             sleep(AKTUELLE_TEMP_UPDATE_INTERVAL)
