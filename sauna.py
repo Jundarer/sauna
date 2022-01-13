@@ -24,9 +24,9 @@ OWN_PATH = sys.path[0]
 FONT_STANDARD = "Arial"
 TEMP_MIN = 60
 TEMP_MAX = 95
-TEMP_UPDATE_INTERVAL=3000
+TEMP_UPDATE_INTERVAL = 1000
 # Veränderung benötigt Anpassung aller Koordinaten!
-BILDSCHIRM_DIMENSION="800x480"
+BILDSCHIRM_DIMENSION = "800x480"
 
 # Statustexte
 TEXT_TEMPERATUR = "Temperatur:"
@@ -36,15 +36,20 @@ TEXT_WARTEN = "Warten auf Startzeit..."
 TEXT_INAKTIV = "Timer nicht aktiv"
 TEXT_REGELN = "Sauna wird geheizt!"
 TEXT_GRAD = "\u00B0"
+TEXT_HITZESTUFE = "Hitzestufe: "
 
 # Helfer Funktion(en)
+
+
 def canvasBildErsetzen(canvas, neues_bild):
     """Ersetzt ein Bild innerhalb eines Canvas"""
     canvas.delete('all')
     canvas.create_image(5, 5, anchor=NW, image=neues_bild)
 
+
 class kontroll_fenster:
     """Kontrolliert alle Elemente innerhalb eines Fensters"""
+
     def __init__(self):
         # Hauptfenster
         self.fenster = Tk()
@@ -89,18 +94,17 @@ class kontroll_fenster:
             if neueTemp != "":
                 self.sollTemp = float(neueTemp)
                 # Der Sauna von dem Update der Temperatur Bescheid geben
-                self.sauna.sollTemp=self.sollTemp
-
+                self.sauna.sollTemp = self.sollTemp
 
     def updateSoll(self, temp):
         """Soll-Temperatur updaten und speichern"""
         self.sollTemp = float(temp)
         # Der Sauna von dem Update der Temperatur Bescheid geben
-        self.sauna.sollTemp=self.sollTemp
+        self.sauna.sollTemp = self.sollTemp
         schieberegelerText_label.config(text=str(temp)+TEXT_GRAD)
         # Neue Koordinaten des Reglers holen und den Text an diese Koordinaten anpassen
-        newCoords=schieberegeler_scale.coords()
-        schieberegelerText_label.place(x=newCoords[0]+50,y=newCoords[1]-15)
+        newCoords = schieberegeler_scale.coords()
+        schieberegelerText_label.place(x=newCoords[0]+50, y=newCoords[1]-15)
         # Speichern der neuen Temperatur in der .ini
         with open(os.path.join(OWN_PATH, "solltemp.ini"), "w+") as f:
             f.write(temp)
@@ -148,6 +152,8 @@ class kontroll_fenster:
             # Temp updates
             tempLabel.config(text=str(int(self.sauna.aktuelleTemp))+TEXT_GRAD)
             tempLabel.after(TEMP_UPDATE_INTERVAL, update)
+            # Hitzestufe update
+            self.updateHitzestufe(self.sauna.stufenMerker)
         update()
 
     def anpassungZeit(self, hours, minutes):
@@ -183,6 +189,9 @@ class kontroll_fenster:
         self.vollbild = True
         self.fenster.attributes("-fullscreen", True)
 
+    def updateHitzestufe(self, neueStufe):
+        hitzeStufe_label.config(text=TEXT_HITZESTUFE+str(neueStufe))
+
 
 #Fenster-Überschrift
 windowTitle = "Sauna Timer"
@@ -198,8 +207,8 @@ schieberegeler_scale = Scale(
     control.fenster, font=(FONT_STANDARD, 15), from_=TEMP_MAX, to=TEMP_MIN, tickinterval=5, length=390, width=100, sliderlength=60, command=control.updateSoll, showvalue=False)
 schieberegeler_scale.set(control.sollTemp)
 
-schieberegelerText_label=Label(control.fenster, font=(FONT_STANDARD+" bold", 18),
-                             text=str(schieberegeler_scale.get())+TEXT_GRAD)
+schieberegelerText_label = Label(control.fenster, font=(FONT_STANDARD+" bold", 18),
+                                 text=str(schieberegeler_scale.get())+TEXT_GRAD)
 
 # Schalt-Zeit-Fenster einrichten und Soll-Zeit anzeigen
 schaltZeitText_label = Label(control.fenster, font=(FONT_STANDARD, beschreibungsText_size),
@@ -247,12 +256,28 @@ aktuelleZeit_label = Label(control.fenster, font=(FONT_STANDARD, 35),
 statusText_label = Label(control.fenster, font=(FONT_STANDARD+"bold", 18),
                          text=TEXT_INAKTIV, width=18)
 
+# Hitze-Stufe
+hitzeStufe_label = Label(control.fenster, font=(FONT_STANDARD+"bold", 18),
+                         text=TEXT_HITZESTUFE+"0", width=18)
+
 # Saunabilder laden
 sauna_img = PhotoImage(file=os.path.join(OWN_PATH, "img/", "sauna.png"))
 sauna_warten_img = PhotoImage(file=os.path.join(
     OWN_PATH, "img/", "sauna_warten.png"))
 sauna_aktiv_img = PhotoImage(file=os.path.join(
     OWN_PATH, "img/", "sauna_aktiv.png"))
+
+# heatbar0_img = PhotoImage(file=os.path.join(
+#     OWN_PATH, "img/", "heatbar0.png"))
+# heatbar1_img = PhotoImage(file=os.path.join(
+#     OWN_PATH, "img/", "heatbar1.png"))
+# heatbar2_img = PhotoImage(file=os.path.join(
+#     OWN_PATH, "img/", "heatbar2.png"))
+# heatbar3_img = PhotoImage(file=os.path.join(
+#     OWN_PATH, "img/", "heatbar3.png"))
+# heatbar4_img = PhotoImage(file=os.path.join(
+#     OWN_PATH, "img/", "heatbar4.png"))
+
 # Canvas erstellen und das Bild in dem Canvas erstellen
 sauna_canvas = Canvas(control.fenster, width=225, height=197)
 sauna_canvas.create_image(5, 5, anchor=NW, image=sauna_img)
@@ -261,6 +286,7 @@ sauna_canvas.create_image(5, 5, anchor=NW, image=sauna_img)
 beschreibungsTextY = 3
 schieberegeler_scale.place(x=0, y=0)
 schieberegelerText_label.place(x=130, y=80)
+
 aktuelleTempText_label.place(x=180, y=beschreibungsTextY)
 aktuelleTemp_label.place(x=185, y=30, width=125, height=125)
 
@@ -283,6 +309,8 @@ aktuelleZeitText_label.place(x=630, y=beschreibungsTextY)
 aktuelleZeit_label.place(x=580, y=60)
 
 statusText_label.place(x=530, y=350)
+
+hitzeStufe_label.place(x=200, y=400)
 
 sauna_canvas.place(x=550, y=150)
 

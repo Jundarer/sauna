@@ -38,15 +38,6 @@ class sauna:
         # True, wenn der Loop aktiv ist
         self.saunaAktiv = False
         # Threads
-        self.aktuelleTempUpdateThread = threading.Thread(
-            target=self.tempUpdate, args=())
-        self.aktuelleTempUpdateThread.daemon = True
-        self.aktuelleTempUpdateDebugThread = threading.Thread(
-            target=self.tempUpdateDebug, args=())
-        self.aktuelleTempUpdateDebugThread.daemon = True
-        self.saunaSteuerungThread = threading.Thread(
-            target=self.saunaLoop, args=())
-        self.saunaSteuerungThread.daemon = True
         self.init_threads()
 
     def init_GPIO(self):
@@ -74,6 +65,15 @@ class sauna:
                         self.deviceFile = "/sys/bus/w1/devices/" + d + "/w1_slave"
 
     def init_threads(self):
+        self.aktuelleTempUpdateThread = threading.Thread(
+            target=self.tempUpdate, args=())
+        self.aktuelleTempUpdateThread.daemon = True
+        self.aktuelleTempUpdateDebugThread = threading.Thread(
+            target=self.tempUpdateDebug, args=())
+        self.aktuelleTempUpdateDebugThread.daemon = True
+        self.saunaSteuerungThread = threading.Thread(
+            target=self.saunaLoop, args=())
+        self.saunaSteuerungThread.daemon = True
         # Thread nur starten, wenn die Temperatur geupdatet werden kann
         if(os.path.isfile(self.deviceFile)):
             self.aktuelleTempUpdateThread.start()
@@ -97,10 +97,12 @@ class sauna:
 
     def tempUpdate(self):
         while(True):
-            first, second = ""
+            first, second = "",""
             while first.find("YES") == -1:
                 with open(self.deviceFile) as f:
-                    first, second = f.readlines()
+                    file=f.readlines()
+                    if(len(file)==2):
+                        first, second = file
             tempString = second.split("=")[1]
             neueTemp = int(tempString)/1000
             self.deltaTemp = neueTemp-self.aktuelleTemp
@@ -111,8 +113,8 @@ class sauna:
     def tempUpdateDebug(self):
         while(True):
             neueTemp = self.aktuelleTemp+(self.stufenMerker/4)-0.2
-            print("Neue Temp: "+str(round(neueTemp,1))+"\nAlte Temp: " +
-                  str(round(self.aktuelleTemp,1))+"\nStufe: "+str(self.stufenMerker)+"\n")
+            print("Alte Temp: " +
+                  str(round(self.aktuelleTemp,1))+"\nNeue Temp: "+str(round(neueTemp,1))+"\nStufe: "+str(self.stufenMerker)+"\n")
             self.deltaTemp = neueTemp-self.aktuelleTemp
             self.aktuelleTemp = neueTemp
             sleep(AKTUELLE_TEMP_UPDATE_INTERVAL)
@@ -123,7 +125,7 @@ class sauna:
             while self.saunaAktiv:
                 # bei dem ersten Start bis 3° + auf voller Leistung heizen
                 if self.ersterStart:
-                    if self.sollTemp-self.aktuelleTemp >= -3:
+                    if self.sollTemp-self.aktuelleTemp > -3:
                         self.stufenMerker = 4
                     else:
                         self.ersterStart = False
@@ -171,5 +173,7 @@ class sauna:
 
     def updatePorts(self):
         if not debug:
-            for i in self.Rel_out:
-                GPIO.output(i, (self.leistungsStufe(self.stufenMerker)))
+            i=0
+            for x in self.Rel_out:
+                GPIO.output(x, self.leistungsStufe[self.stufenMerker][i])
+                i=1+1
