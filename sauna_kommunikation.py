@@ -145,7 +145,7 @@ class sauna:
                         self.vermindern()
                 self.updatePorts()
                 if debug:
-                    print("Saunaleistung wurd aktualisiert auf: " +
+                    print("Saunaleistung wurde aktualisiert auf: " +
                           str(self.stufenMerker))
                 sleep(SAUNA_UPDATE_INTERVAL)
             # Warte bis die Sauna aktiviert wird
