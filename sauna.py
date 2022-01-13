@@ -104,7 +104,7 @@ class kontroll_fenster:
         schieberegelerText_label.config(text=str(temp)+TEXT_GRAD)
         # Neue Koordinaten des Reglers holen und den Text an diese Koordinaten anpassen
         newCoords = schieberegeler_scale.coords()
-        schieberegelerText_label.place(x=newCoords[0]+50, y=newCoords[1]-15)
+        schieberegelerText_label.place(x=newCoords[0]+50, y=newCoords[1]-17)
         # Speichern der neuen Temperatur in der .ini
         with open(os.path.join(OWN_PATH, "solltemp.ini"), "w+") as f:
             f.write(temp)
@@ -285,7 +285,7 @@ sauna_canvas.create_image(5, 5, anchor=NW, image=sauna_img)
 # Positionierung aller Elemente
 beschreibungsTextY = 3
 schieberegeler_scale.place(x=0, y=0)
-schieberegelerText_label.place(x=130, y=80)
+schieberegelerText_label.place(x=130, y=345)
 
 aktuelleTempText_label.place(x=180, y=beschreibungsTextY)
 aktuelleTemp_label.place(x=185, y=30, width=125, height=125)
