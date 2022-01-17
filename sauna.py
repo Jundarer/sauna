@@ -10,6 +10,7 @@ import os
 import sys
 import argparse
 import sauna_kommunikation
+import atexit
 
 # Initialisiert den Argument Parser, welches Parameter aus der Kommandozeile ausliest
 parser = argparse.ArgumentParser()
@@ -114,16 +115,20 @@ class kontroll_fenster:
         self.timerAktiv = False
         self.anpassungStatus(sauna_img, TEXT_INAKTIV, "blue4")
         self.sauna.stoppen()
+        start_button.config(state=NORMAL)
 
     def starten(self):
+<<<<<<< HEAD
         """Starten-Taste gedrückt"""
+=======
+        """Starten-Taste gedrückt"""        
+>>>>>>> f538e56b75823d637f1ada0c2ddbcae0725a3694
         if self.timerAktiv == True:
             return True
         self.timerAktiv = True
         self.anpassungStatus(
             sauna_warten_img, TEXT_WARTEN, "indian red")
-        # Sauna bei neuem klicken von Start stoppen (?)
-        # self.sauna.stoppen()
+        start_button.config(state=DISABLED)
 
     # nun gehts in die Hitze
     def regeln(self):
@@ -201,6 +206,9 @@ windowTitle = "Sauna Timer"
 # Fenster einrichten
 control = kontroll_fenster()
 
+@atexit.register
+def shutdown():
+    control.sauna.stoppen()
 # Grösse der Texte
 beschreibungsText_size = 18
 
