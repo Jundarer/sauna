@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
+
+# 1. In der Kommandozeile "crontab -e"
+# 2. In der Datei "@reboot sudo python3 /pfad/zur/SD/Karte/startup.py" hinzufügen
 import os
 try:
     from RPi import GPIO
 except (ImportError, RuntimeError) as e:
     print("Could not find GPIO module. Exiting...")
-    os.sleep(1)
     exit()
+    
 # GPIO Variablen
 Rel_out = (31, 33, 35, 37)  # GPIO-Pins (N, R, S, T)
 

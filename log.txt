@@ -1,0 +1,105 @@
+2023-12-24 15:31:18: Sauna-Modul wird im Debug-Modus gestartet, da das RPi Modul nicht gefunden wurde oder das Gerät kein Raspi ist.
+2023-12-24 15:31:18: Alte Temp: 70
+Neue Temp: 69.8
+Stufe: 0
+
+2023-12-24 15:31:20: Alte Temp: 69.8
+Neue Temp: 69.6
+Stufe: 0
+
+2023-12-24 15:31:22: Alte Temp: 69.6
+Neue Temp: 69.4
+Stufe: 0
+
+2023-12-24 15:31:23: Sauna startet mit dem Ziel 88.0 Grad
+2023-12-24 15:31:23: Saunaleistung wurde aktualisiert auf: 4
+2023-12-24 15:31:24: Alte Temp: 69.4
+Neue Temp: 70.2
+Stufe: 4
+
+2023-12-24 15:31:26: Alte Temp: 70.2
+Neue Temp: 71.0
+Stufe: 4
+
+2023-12-24 15:31:28: Alte Temp: 71.0
+Neue Temp: 71.8
+Stufe: 4
+
+2023-12-24 15:31:30: Alte Temp: 71.8
+Neue Temp: 72.6
+Stufe: 4
+
+2023-12-24 15:31:32: Alte Temp: 72.6
+Neue Temp: 73.4
+Stufe: 4
+
+2023-12-24 15:31:33: Saunaleistung wurde aktualisiert auf: 4
+2023-12-24 15:31:34: Alte Temp: 73.4
+Neue Temp: 74.2
+Stufe: 4
+
+2023-12-24 15:31:36: Alte Temp: 74.2
+Neue Temp: 75.0
+Stufe: 4
+
+2023-12-24 15:31:38: Alte Temp: 75.0
+Neue Temp: 75.8
+Stufe: 4
+
+2023-12-24 15:31:40: Alte Temp: 75.8
+Neue Temp: 76.6
+Stufe: 4
+
+2023-12-24 15:31:42: Alte Temp: 76.6
+Neue Temp: 77.4
+Stufe: 4
+
+2023-12-24 15:31:43: Saunaleistung wurde aktualisiert auf: 4
+2023-12-24 15:31:44: Alte Temp: 77.4
+Neue Temp: 78.2
+Stufe: 4
+
+2023-12-24 15:31:46: Alte Temp: 78.2
+Neue Temp: 79.0
+Stufe: 4
+
+2023-12-24 15:32:38: Sauna-Modul wird im Debug-Modus gestartet, da das RPi Modul nicht gefunden wurde oder das Gerät kein Raspi ist.
+2023-12-24 15:32:38: Alte Temp: 70
+Neue Temp: 69.8
+Stufe: 0
+2023-12-24 15:32:40: Alte Temp: 69.8
+Neue Temp: 69.6
+Stufe: 0
+2023-12-24 15:32:42: Alte Temp: 69.6
+Neue Temp: 69.4
+Stufe: 0
+2023-12-24 15:32:44: Alte Temp: 69.4
+Neue Temp: 69.2
+Stufe: 0
+2023-12-24 15:32:45: Sauna gestoppt!
+2023-12-24 15:32:56: Sauna-Modul wird im Debug-Modus gestartet, da das RPi Modul nicht gefunden wurde oder das Gerät kein Raspi ist.
+2023-12-24 15:32:56: Alte Temp: 70
+Neue Temp: 69.8
+Stufe: 0
+2023-12-24 15:32:58: Alte Temp: 69.8
+Neue Temp: 69.6
+Stufe: 0
+2023-12-24 15:33:00: Alte Temp: 69.6
+Neue Temp: 69.4
+Stufe: 0
+2023-12-24 15:33:02: Alte Temp: 69.4
+Neue Temp: 69.2
+Stufe: 0
+2023-12-24 15:33:04: Alte Temp: 69.2
+Neue Temp: 69.0
+Stufe: 0
+2023-12-24 15:33:06: Alte Temp: 69.0
+Neue Temp: 68.8
+Stufe: 0
+2023-12-24 15:33:08: Alte Temp: 68.8
+Neue Temp: 68.6
+Stufe: 0
+2023-12-24 15:33:10: Alte Temp: 68.6
+Neue Temp: 68.4
+Stufe: 0
+2023-12-24 15:33:11: Sauna gestoppt!
