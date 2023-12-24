@@ -25,8 +25,7 @@ OWN_PATH = sys.path[0]
 FONT_STANDARD = "Arial"
 TEMP_MIN = 60
 TEMP_MAX = 95
-TEMP_UPDATE_INTERVAL = 1000
-# Veränderung benötigt Anpassung aller Koordinaten!
+TEMP_UPDATE_INTERVAL = 1000  # Veränderung benötigt Anpassung aller Koordinaten!
 BILDSCHIRM_DIMENSION = "800x480"
 
 # Statustexte
@@ -40,8 +39,6 @@ TEXT_GRAD = "\u00B0"
 TEXT_HITZESTUFE = "Ofenleistung: "
 
 # Helfer Funktion(en)
-
-
 def canvasBildErsetzen(canvas, neues_bild):
     """Ersetzt ein Bild innerhalb eines Canvas"""
     canvas.delete('all')
@@ -74,8 +71,6 @@ class kontroll_fenster:
         # Metadaten des Fensters setzen
         self.fenster.title(windowTitle)
         self.fenster.geometry(BILDSCHIRM_DIMENSION)
- #       self.fenster.iconbitmap(os.path.join(
- #           OWN_PATH, "img", "sauna_icon.ico"))
         self.fenster.bind("<F11>", self.vollbildToggle)
         self.fenster.bind("<Escape>", self.vollbildBeenden)
 
@@ -118,11 +113,7 @@ class kontroll_fenster:
         start_button.config(state=NORMAL)
 
     def starten(self):
-<<<<<<< HEAD
         """Starten-Taste gedrückt"""
-=======
-        """Starten-Taste gedrückt"""        
->>>>>>> f538e56b75823d637f1ada0c2ddbcae0725a3694
         if self.timerAktiv == True:
             return True
         self.timerAktiv = True
@@ -148,7 +139,7 @@ class kontroll_fenster:
             timeLabel.after(1000, update)
             # Falls der Timer aktib ist die aktuelle Zeit mit der Schalt-Zeit vergleichen und wenn gleich: regeln
             if self.timerAktiv:
-                if self.aktuelleZeit.strftime("%H:%M:%S") == self.schaltZeit.strftime("%H:%M:%S"):
+                if self.aktuelleZeit.strftime("%H:%M") == self.schaltZeit.strftime("%H:%M"): # sec. entfernt!
                     self.regeln()
         # Initialer Aufruf der Funktion
         update()
