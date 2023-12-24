@@ -25,8 +25,8 @@ OWN_PATH = sys.path[0]
 FONT_STANDARD = "Arial"
 TEMP_MIN = 60
 TEMP_MAX = 95
-TEMP_UPDATE_INTERVAL = 1000  # Veränderung benötigt Anpassung aller Koordinaten!
-BILDSCHIRM_DIMENSION = "800x480"
+TEMP_UPDATE_INTERVAL = 1000  
+BILDSCHIRM_DIMENSION = "800x480" # Veränderung benötigt Anpassung aller Koordinaten!
 
 # Statustexte
 TEXT_TEMPERATUR = "Temperatur:"
@@ -44,10 +44,8 @@ def canvasBildErsetzen(canvas, neues_bild):
     canvas.delete('all')
     canvas.create_image(5, 5, anchor=NW, image=neues_bild)
 
-
 class kontroll_fenster:
     """Kontrolliert alle Elemente innerhalb eines Fensters"""
-
     def __init__(self):
         # Hauptfenster
         self.fenster = Tk()
@@ -130,16 +128,16 @@ class kontroll_fenster:
 
     def zeitUpdate(self, timeLabel):
         """Definiert und initalisiert die Zeit updates"""
-        # Funktion, die immer wieder aufgerufen wird, um die Zeitanzeige zu updaten
+        # Funktion, die immer wieder aufgerufen wird, um die Zeitanzeige upzudaten
         def update():
             # Zeit updates
             self.aktuelleZeit = datetime.now()
             timeLabel['text'] = self.aktuelleZeit.strftime("%H:%M:%S")
             # Nach 1000ms diese Funktion wieder aufrufen
             timeLabel.after(1000, update)
-            # Falls der Timer aktib ist die aktuelle Zeit mit der Schalt-Zeit vergleichen und wenn gleich: regeln
+            # Falls der Timer aktiv ist: aktuelle Zeit mit Schalt-Zeit vergleichen und wenn gleich: regeln
             if self.timerAktiv:
-                if self.aktuelleZeit.strftime("%H:%M") == self.schaltZeit.strftime("%H:%M"): # sec. entfernt!
+                if self.aktuelleZeit.strftime("%H:%M") == self.schaltZeit.strftime("%H:%M"): # sec. entfernt!                    
                     self.regeln()
         # Initialer Aufruf der Funktion
         update()
@@ -190,6 +188,8 @@ class kontroll_fenster:
     def updateHitzestufe(self, neueStufe):
         hitzeStufe_label.config(text=TEXT_HITZESTUFE+str(neueStufe))
 
+    def programmBeenden(self, event=None):
+        self.fenster.quit()
 
 #Fenster-Überschrift
 windowTitle = "Sauna Timer"
@@ -261,27 +261,23 @@ statusText_label = Label(control.fenster, font=(FONT_STANDARD+"bold", 18),
 hitzeStufe_label = Label(control.fenster, font=(FONT_STANDARD+"bold", 18),
                          text=TEXT_HITZESTUFE+"0", width=18)
 
+
 # Saunabilder laden
 sauna_img = PhotoImage(file=os.path.join(OWN_PATH, "img/", "sauna.png"))
 sauna_warten_img = PhotoImage(file=os.path.join(
     OWN_PATH, "img/", "sauna_warten.png"))
 sauna_aktiv_img = PhotoImage(file=os.path.join(
     OWN_PATH, "img/", "sauna_aktiv.png"))
-
-# heatbar0_img = PhotoImage(file=os.path.join(
-#     OWN_PATH, "img/", "heatbar0.png"))
-# heatbar1_img = PhotoImage(file=os.path.join(
-#     OWN_PATH, "img/", "heatbar1.png"))
-# heatbar2_img = PhotoImage(file=os.path.join(
-#     OWN_PATH, "img/", "heatbar2.png"))
-# heatbar3_img = PhotoImage(file=os.path.join(
-#     OWN_PATH, "img/", "heatbar3.png"))
-# heatbar4_img = PhotoImage(file=os.path.join(
-#     OWN_PATH, "img/", "heatbar4.png"))
+exit_img=PhotoImage(file=os.path.join(
+    OWN_PATH, "img/", "exit_small.png"))
 
 # Canvas erstellen und das Bild in dem Canvas erstellen
 sauna_canvas = Canvas(control.fenster, width=225, height=197)
 sauna_canvas.create_image(5, 5, anchor=NW, image=sauna_img)
+
+# Exit Button
+exit_button=Button(control.fenster, image=exit_img, command=lambda: control.programmBeenden())
+exit_button["border"] = "0"
 
 # Positionierung aller Elemente
 beschreibungsTextY = 3
@@ -313,10 +309,11 @@ statusText_label.place(x=530, y=350)
 
 hitzeStufe_label.place(x=200, y=400)
 
-sauna_canvas.place(x=550, y=150)
+exit_button.place(x=758,y=3)
 
+sauna_canvas.place(x=550, y=150)
 
 # Startet den Loop, um die Zeit und Temperatur zu updaten mit den gegeben Labels
 control.initialisiereZeitTemp(aktuelleZeit_label, aktuelleTemp_label)
-# Startet den mainloop des Fensters, damit jegliche Updates(Tasten usw.) ausgefuehert werden
+# Startet den mainloop des Fensters, damit alle Updates(Tasten usw.) ausgefuehert werden
 control.fenster.mainloop()

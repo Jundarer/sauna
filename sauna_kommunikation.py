@@ -1,17 +1,19 @@
 import os
 from time import *
 import threading
+import logging
 
 debug = False
+# Instantiate the logger
+logger = logging.Logger('log.txt')
 try:
     from RPi import GPIO
 except (ImportError, RuntimeError) as e:
-    print("Sauna-Modul wird im Debug-Modus gestartet, da das RPi Modul nicht gefunden wurde oder das Gerät kein Raspi ist.")
+    logger.log("Sauna-Modul wird im Debug-Modus gestartet, da das RPi Modul nicht gefunden wurde oder das Gerät kein Raspi ist.")
     debug = True
 
 AKTUELLE_TEMP_UPDATE_INTERVAL = 2
 SAUNA_UPDATE_INTERVAL = 10
-
 
 class sauna:
     """Steuert die direkte Kommunikation mit der Sauna"""
@@ -25,20 +27,18 @@ class sauna:
         # GPIO Variablen
         self.Rel_out = (31, 33, 35, 37)  # GPIO-Pins (N, R, S, T)
         #Def. Leistungs-Stufen
-        self.kw0 = (0, 0, 0, 0)
-        self.kw1 = (0, 0, 1, 1)
-        self.kw2 = (1, 0, 0, 1)
-        self.kw3 = (1, 0, 1, 1)
-        self.kw4 = (1, 1, 1, 1)
+        self.kw0 = (1, 1, 1, 1)
+        self.kw1 = (0, 1, 1, 0)
+        self.kw2 = (1, 1, 0, 0)
+        self.kw3 = (0, 1, 0, 0)
+        self.kw4 = (0, 0, 0, 0)
         self.leistungsStufe = (
             self.kw0, self.kw1, self.kw2, self.kw3, self.kw4)
         self.stufenMerker = 0
         self.init_GPIO()
         self.initDeviceFile()
-        # True, wenn der Loop aktiv ist
-        self.saunaAktiv = False
-        # Threads
-        self.init_threads()
+        self.saunaAktiv = False   # True, wenn der Loop aktiv ist        
+        self.init_threads()       # Threads
 
     def init_GPIO(self):
         """Konfiguriert die GPIO pins"""
@@ -48,11 +48,10 @@ class sauna:
             GPIO.setwarnings(False)
             for i in self.Rel_out:
                 GPIO.setup(i, GPIO.OUT)
-                GPIO.output(i, False)  # Am Anfang alles auf Null!
-            # nun sind die out-pins konfiguriert!
-
-            # Ermitteln des Temperatur-Files (Seite 315) gilt NUR für den PI!
-            # und der Sensor MUSS angeschlossen sein!
+                GPIO.output(i, True)  # Am Anfang alles auf Null!
+                                       # nun sind die out-pins konfiguriert!
+                                       # Ermitteln des Temperatur-Files (Seite 315) gilt NUR für den PI!
+                                       # und der Sensor MUSS angeschlossen sein!
             os.system("modprobe wire")      # modprobe nicht nötig
             os.system("modprobe w1-gpio")   # ist in boot-config festgelegt
             os.system("modprobe w1-therm")
@@ -84,16 +83,17 @@ class sauna:
 
     def starten(self):
         """Startet die Sauna mit der gegeben Ziel Temperatur"""
-        print("Sauna startet mit dem Ziel {} Grad".format(self.sollTemp))
-        # Sauna loop thread auf aktiv setzen
-        self.saunaAktiv = True
+        if self.saunaAktiv==False:
+            logger.log("Sauna startet mit dem Ziel {} Grad".format(self.sollTemp))
+            # Sauna loop thread auf aktiv setzen
+            self.saunaAktiv = True
 
     def stoppen(self):
         """Stoppt das Heizen der Sauna"""
         self.saunaAktiv = False
         self.stufenMerker = 0
         self.updatePorts()
-        print("Sauna gestoppt!")
+        logger.log("Sauna gestoppt!")
 
     def tempUpdate(self):
         while(True):
@@ -113,7 +113,7 @@ class sauna:
     def tempUpdateDebug(self):
         while(True):
             neueTemp = self.aktuelleTemp+(self.stufenMerker/4)-0.2
-            print("Alte Temp: " +
+            logger.log("Alte Temp: " +
                   str(round(self.aktuelleTemp,1))+"\nNeue Temp: "+str(round(neueTemp,1))+"\nStufe: "+str(self.stufenMerker)+"\n")
             self.deltaTemp = neueTemp-self.aktuelleTemp
             self.aktuelleTemp = neueTemp
@@ -123,7 +123,7 @@ class sauna:
         # Dieser Loop läuft dauernd, fuehrt aber nur die Logik, wenn die Sauna aktiv ist.
         while (True):
             while self.saunaAktiv:
-                # bei dem ersten Start bis 3° + auf voller Leistung heizen
+                # bei dem ersten Start bis +3° auf voller Leistung heizen
                 if self.ersterStart:
                     if self.sollTemp-self.aktuelleTemp > -3:
                         self.stufenMerker = 4
@@ -131,21 +131,21 @@ class sauna:
                         self.ersterStart = False
                 # Wenn wir nicht mehr im ersten Start-Modus sind
                 if not self.ersterStart:
-                # bei mehr als 5° - sofort volle Leistung
+                # bei mehr als -5° sofort volle Leistung
                     if self.sollTemp-self.aktuelleTemp >= 5:
                         self.stufenMerker = 4
-                    # bei mehr als 2° + sofort aus
+                    # bei mehr als +2° sofort aus
                     elif self.sollTemp-self.aktuelleTemp <= -2:
                         self.stufenMerker = 0
-                    # bei mehr als 0.5° - erhöhen
+                    # bei mehr als -0.5° erhöhen
                     elif self.sollTemp-self.aktuelleTemp >= 0.5:
                         self.erhöhen()
-                    # bei mehr als 0.5° + vermindern
+                    # bei mehr als +0.5° vermindern
                     elif self.sollTemp-self.aktuelleTemp <= -0.5:
                         self.vermindern()
                 self.updatePorts()
                 if debug:
-                    print("Saunaleistung wurde aktualisiert auf: " +
+                    logger.log("Saunaleistung wurde aktualisiert auf: " +
                           str(self.stufenMerker))
                 sleep(SAUNA_UPDATE_INTERVAL)
             # Warte bis die Sauna aktiviert wird
