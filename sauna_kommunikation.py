@@ -176,4 +176,4 @@ class sauna:
             i=0
             for x in self.Rel_out:
                 GPIO.output(x, self.leistungsStufe[self.stufenMerker][i])
-                i=1+1
+                i=i+1
